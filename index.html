@@ -131,14 +131,26 @@
 </main>
 
 <!-- ═══════════════ MINI-LECTEUR ═══════════════ -->
+<!-- Un seul objet : mini-lecteur ailleurs, barre de travail dans la vue d'un
+     titre. Meme emplacement, meme hauteur — mais reculer coute une seule tape,
+     et la barre de position se tire sans ouvrir la feuille. -->
 <div class="mini" id="mini" hidden>
-  <div class="mini-jauge"><i id="mini-jauge"></i></div>
+  <div class="mini-jauge" id="mini-barre" role="slider" tabindex="0"
+       aria-label="Position de lecture" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <i id="mini-jauge"></i><span class="mini-poi" id="mini-poi"></span>
+  </div>
   <button class="mini-ouvre" id="mini-ouvre" aria-label="Ouvrir le lecteur">
     <span class="mini-n anton" id="mini-num"></span>
     <span class="mini-txt"><b id="mini-titre"></b><s id="mini-source"></s></span>
   </button>
+  <button class="mini-saut" id="mini-recul" aria-label="Reculer de quatre mesures">
+    <svg class="ic ic-22"><use href="#ic-recul"/></svg><em class="mono">4</em>
+  </button>
   <button class="mini-pp" id="mini-pp" aria-label="Lecture">
     <svg class="ic ic-22"><use href="#ic-play"/></svg>
+  </button>
+  <button class="mini-saut" id="mini-avance" aria-label="Avancer de quatre mesures">
+    <svg class="ic ic-22"><use href="#ic-avance"/></svg><em class="mono">4</em>
   </button>
 </div>
 

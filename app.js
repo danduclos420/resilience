@@ -73,6 +73,7 @@ A.preload = 'metadata';
 var lect = { num: null, src: 'maquette', joue: false };
 
 var mini = $('#mini'), miniJauge = $('#mini-jauge'), miniNum = $('#mini-num'),
+    miniBarre = $('#mini-barre'), miniPoi = $('#mini-poi'),
     miniTitre = $('#mini-titre'), miniSource = $('#mini-source'), miniPP = $('#mini-pp');
 var feuille = $('#feuille'), scrim = $('#scrim'),
     flNum = $('#fl-num'), flTitre = $('#fl-titre'), flFeat = $('#fl-feat'),
@@ -178,6 +179,7 @@ function charger(num, src, lancer) {
   flTitre.textContent = p.titre;
   flFeat.textContent = p.feat ? 'avec ' + p.feat : 'D.M.P';
   majBascule(p, src);
+  majModeTravail();
   flT2.textContent = mmss(A.duration);
   majMedia(p);
   if (lancer) jouer();
@@ -211,6 +213,10 @@ function placer(f) {
   f = Math.min(1, Math.max(0, f || 0));
   var pc = (f * 100).toFixed(3) + '%';
   miniJauge.style.width = pc;
+  miniPoi.style.left = pc;
+  miniBarre.setAttribute('aria-valuenow', Math.round(f * 100));
+  miniBarre.setAttribute('aria-valuetext', mmss(f * (A.duration || 0)) +
+    (isFinite(A.duration) ? ' sur ' + mmss(A.duration) : ''));
   flRemp.style.right = (100 - f * 100).toFixed(3) + '%';
   flPoi.style.left = pc;
   flT1.textContent = mmss(f * (A.duration || 0));
@@ -249,17 +255,52 @@ flBarre.addEventListener('keydown', function (ev) {
 });
 
 miniPP.addEventListener('click', bascule);
+$('#mini-recul').addEventListener('click', function () { deplacer(-1); });
+$('#mini-avance').addEventListener('click', function () { deplacer(1); });
+
+/* Se placer dans le morceau sans ouvrir la feuille : c'est ce qui fait passer
+   « reculer sur un passage » de quatre tapes a une seule. */
+var tireMini = false;
+function fractionMini(ev) {
+  var r = miniBarre.getBoundingClientRect();
+  return Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width));
+}
+miniBarre.addEventListener('pointerdown', function (ev) {
+  if (!isFinite(A.duration)) return;
+  tireMini = true; miniBarre.classList.add('tire');
+  miniBarre.setPointerCapture(ev.pointerId);
+  placer(fractionMini(ev)); ev.preventDefault(); ev.stopPropagation();
+});
+miniBarre.addEventListener('pointermove', function (ev) {
+  if (tireMini) { placer(fractionMini(ev)); ev.preventDefault(); }
+});
+miniBarre.addEventListener('pointerup', function (ev) {
+  if (!tireMini) return;
+  tireMini = false; miniBarre.classList.remove('tire');
+  A.currentTime = fractionMini(ev) * A.duration;
+});
+miniBarre.addEventListener('pointercancel', function () {
+  tireMini = false; miniBarre.classList.remove('tire');
+});
+miniBarre.addEventListener('keydown', function (ev) {
+  if (!isFinite(A.duration)) return;
+  var d = { ArrowLeft: -5, ArrowRight: 5, ArrowDown: -15, ArrowUp: 15 }[ev.key];
+  if (d === undefined) return;
+  A.currentTime = Math.min(A.duration, Math.max(0, A.currentTime + d));
+  ev.preventDefault();
+});
 flPP.addEventListener('click', bascule);
 /* 15 s valaient 6 a 10 mesures selon le tempo — un couplet entier. On recule
    de quatre mesures, calculees depuis le BPM reel de la piste. */
-function pasMesures(n) {
+var MESURES_SAUT = 4;          // un groupe de quatre barres, l'unite du rappeur
+function dureeMesures(n) {
   var p = piste(lect.num);
-  if (!p || !p.bpm) return 5;
-  return (60 / p.bpm) * 4 * n;
+  if (!p || !p.bpm) return n * 2;          // repli prudent sans tempo connu
+  return (60 / p.bpm) * 4 * n;             // 4 temps = 1 mesure
 }
 function deplacer(sens) {
   if (!isFinite(A.duration)) return;
-  var d = pasMesures(1) * sens;
+  var d = dureeMesures(MESURES_SAUT) * sens;
   A.currentTime = Math.min(A.duration, Math.max(0, A.currentTime + d));
 }
 $('#fl-recul').addEventListener('click', function () { deplacer(-1); });
@@ -750,6 +791,14 @@ function rendrePiste(num) {
   majBoutonsSource();
 }
 
+/* Le mini-lecteur devient barre de travail quand on lit le texte du titre qui
+   joue : memes dimensions, meme emplacement, mais toutes les commandes utiles. */
+function majModeTravail(r) {
+  r = r || route();
+  var travail = (r.vue === 'piste' && lect.num === r.num);
+  mini.classList.toggle('travail', travail);
+}
+
 /* ═══════════════════════════ ROUTAGE ═══════════════════════════ */
 var VUES = { album: '#v-album', apprendre: '#v-apprendre', studio: '#v-studio',
               guide: '#v-guide', piste: '#v-piste' };
@@ -790,6 +839,8 @@ function afficher() {
   courant = r.cle;
   document.title = (r.vue === 'piste' && piste(r.num))
     ? piste(r.num).titre + ' — Résilience' : 'Résilience — D.M.P';
+
+  majModeTravail(r);
 
   var t = $('.tete');
   if (t) t.classList.toggle('decolle', window.scrollY > 24);

@@ -596,9 +596,30 @@ ol,ul{list-style:none;margin:0;padding:0}
 }
 .mini[hidden]{display:none}
 @keyframes mini-ent{from{opacity:0;transform:translate3d(0,16px,0)}to{opacity:1;transform:none}}
-.mini-jauge{position:absolute;top:0;left:0;right:0;height:2px;background:var(--ligne2)}
+/* La barre de position est aussi la zone tactile : trait de 2 px, mais 16 px
+   de prise reelle grace au debord du ::after. */
+.mini-jauge{position:absolute;top:0;left:0;right:0;height:2px;background:var(--ligne2);
+  touch-action:none;cursor:pointer}
+.mini-jauge::after{content:'';position:absolute;left:0;right:0;top:-7px;bottom:-7px}
 .mini-jauge i{display:block;height:100%;width:0;background:var(--or);
   box-shadow:0 0 8px var(--or)}
+.mini-poi{position:absolute;top:1px;left:0;width:11px;height:11px;border-radius:50%;
+  background:var(--or-c);translate:-50% -50%;pointer-events:none;opacity:0;
+  box-shadow:0 1px 6px #000000B3;transition:opacity var(--t-vite) linear,scale var(--t-vite) var(--ent)}
+.mini.travail .mini-poi{opacity:1}
+.mini-jauge.tire .mini-poi{scale:1.5;opacity:1}
+.mini-jauge.tire i{transition:none}
+
+/* les sauts n'apparaissent que dans la vue d'un titre */
+.mini-saut{display:none;position:relative;width:44px;height:44px;border-radius:11px;
+  flex:none;place-items:center;color:var(--tx2);
+  transition:background var(--t-vite) linear,transform var(--t-vite) var(--ent)}
+.mini.travail .mini-saut{display:grid}
+.mini-saut:active{background:var(--s2);transform:scale(.92)}
+.mini-saut em{position:absolute;top:50%;left:50%;translate:-50% -44%;
+  font-style:normal;font-size:8.5px;color:var(--tx3)}
+.mini.travail .mini-n{display:none}
+.mini.travail .mini-ouvre{padding-left:var(--e4)}
 .mini-ouvre{
   flex:1;min-width:0;display:flex;align-items:center;gap:var(--e3);
   height:100%;padding-left:var(--e3);text-align:left;
