@@ -36,6 +36,37 @@ function piste(num) {
   return null;
 }
 
+/* ═══════════════════════════ MEMOIRE LOCALE ═══════════════════════════ */
+/* Aucune base : un seul objet dans localStorage. On rend a D.M.P le titre, la
+   source, la position et les sections qu'il avait repliees. En navigation
+   privee l'ecriture leve une exception : tout est enveloppe. */
+var CLE = 'resilience.etat';
+var memoire = (function () {
+  try { return JSON.parse(localStorage.getItem(CLE)) || {}; }
+  catch (e) { return {}; }
+})();
+if (!memoire.replis) memoire.replis = {};
+
+/* Limitation de debit, PAS anti-rebond : timeupdate se declenche toutes les
+   250 ms, donc un anti-rebond de 400 ms se rearmait sans fin et n'ecrivait
+   jamais tant que l'audio jouait. */
+var derniereEcriture = 0;
+function ecrire() {
+  derniereEcriture = performance.now();
+  try { localStorage.setItem(CLE, JSON.stringify(memoire)); } catch (e) {}
+}
+function retenir(force) {
+  if (force || performance.now() - derniereEcriture > 2000) ecrire();
+}
+/* points de vidage : on n'attend jamais le prochain intervalle pour ces cas */
+['pause', 'ended'].forEach(function (ev) {
+  window.addEventListener('resilience:' + ev, function () { retenir(true); });
+});
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'hidden') retenir(true);
+});
+window.addEventListener('pagehide', function () { retenir(true); });
+
 /* ═══════════════════════════ LECTEUR ═══════════════════════════ */
 var A = new Audio();
 A.preload = 'metadata';
@@ -163,7 +194,15 @@ function bascule() {
 }
 
 A.addEventListener('play', function () { lect.joue = true; majEtatLecture(); });
-A.addEventListener('pause', function () { lect.joue = false; majEtatLecture(); });
+A.addEventListener('timeupdate', function () {
+  if (!lect.num) return;
+  memoire.num = lect.num; memoire.src = lect.src; memoire.t = A.currentTime;
+  retenir();
+});
+A.addEventListener('pause', function () {
+  lect.joue = false; majEtatLecture();
+  window.dispatchEvent(new Event('resilience:pause'));
+});
 A.addEventListener('ended', function () { lect.joue = false; placer(0); majEtatLecture(); });
 A.addEventListener('loadedmetadata', function () { flT2.textContent = mmss(A.duration); });
 A.addEventListener('timeupdate', function () { if (!tire) placer(A.currentTime / A.duration || 0); });
@@ -500,16 +539,6 @@ function rendrePiste(num) {
   pi.appendChild(et);
   box.appendChild(pi);
 
-  /* jalons */
-  var j = el('div', 'jalons');
-  [['Texte', p.pret], ['Instru', p.pret], ['Maquette', p.pret]].forEach(function (x) {
-    var d = el('div', 'jalon ' + (x[1] ? 'ok' : 'non'));
-    d.appendChild(ic(x[1] ? 'check' : 'chantier', 18));
-    d.appendChild(el('span', null, x[0]));
-    j.appendChild(d);
-  });
-  box.appendChild(j);
-
   /* sources audio ou avertissement */
   if (p.pret) {
     var s = el('div', 'src');
@@ -607,15 +636,28 @@ function rendrePiste(num) {
     if (sections.length > 1) tete.appendChild(btTout);
     par.appendChild(tete);
 
+    // « Refrain » apparait deux fois dans plusieurs titres, avec des contenus
+    // differents : on numerote les occurrences pour qu'elles se distinguent
+    var compte = {};
+    sections.forEach(function (s) { compte[s.tag] = (compte[s.tag] || 0) + 1; });
+    var vus = {};
+
+    var replis = memoire.replis[num] || [];
     var secs = [];
-    sections.forEach(function (s) {
+    sections.forEach(function (s, iSec) {
       // seul le vrai refrain passe en or : le pre-refrain doit rester distinct
       var est = /^(refrain|dernier refrain)/i.test(s.tag);
       var sec = el('div', 'par-sec' + (est ? ' refrain' : ''));
-      sec.dataset.ouvert = '1';
+      var ouvert = replis[iSec] === 0 ? '0' : '1';
+      sec.dataset.ouvert = ouvert;
       var t = el('button', 'par-t'); t.type = 'button';
-      t.setAttribute('aria-expanded', 'true');
-      t.appendChild(el('span', null, s.tag));
+      t.setAttribute('aria-expanded', ouvert === '1' ? 'true' : 'false');
+      var libelle = s.tag;
+      if (compte[s.tag] > 1) {
+        vus[s.tag] = (vus[s.tag] || 0) + 1;
+        libelle = s.tag + ' ' + vus[s.tag];
+      }
+      t.appendChild(el('span', null, libelle));
       if (s.voix) t.appendChild(el('em', null, '\u00b7 ' + s.voix));
       t.appendChild(el('i'));
       var ch = ic('chevron', 18); ch.classList.add('chv');
@@ -628,12 +670,17 @@ function rendrePiste(num) {
         sec.dataset.ouvert = o ? '0' : '1';
         t.setAttribute('aria-expanded', String(!o));
         majOutil();
+        retenirReplis();
       });
       sec.appendChild(t); sec.appendChild(cc);
       secs.push(sec);
       par.appendChild(sec);
     });
 
+    function retenirReplis() {
+      memoire.replis[num] = secs.map(function (x) { return x.dataset.ouvert === '1' ? 1 : 0; });
+      retenir();
+    }
     function majOutil() {
       var ouverts = secs.filter(function (s) { return s.dataset.ouvert === '1'; }).length;
       btTout.firstChild.textContent = ouverts ? 'Tout replier' : 'Tout d\u00e9plier';
@@ -647,6 +694,7 @@ function rendrePiste(num) {
         s.querySelector('.par-t').setAttribute('aria-expanded', cible === '1' ? 'true' : 'false');
       });
       majOutil();
+      retenirReplis();
     });
 
     box.appendChild(par);
@@ -736,6 +784,18 @@ window.addEventListener('scroll', function () {
 rendreAlbum();
 if (!location.hash) location.replace('#album');
 afficher();
+
+/* Reprise silencieuse : on remonte le mini-lecteur a l'arret, a la position
+   quittee. Pas de boite de dialogue — il tape sur lecture s'il veut reprendre. */
+if (memoire.num && piste(memoire.num) && piste(memoire.num)[memoire.src || 'maquette']) {
+  charger(memoire.num, memoire.src || 'maquette', false);
+  if (memoire.t > 1) {
+    A.addEventListener('loadedmetadata', function reprise() {
+      A.removeEventListener('loadedmetadata', reprise);
+      if (isFinite(A.duration) && memoire.t < A.duration - 1) A.currentTime = memoire.t;
+    });
+  }
+}
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
