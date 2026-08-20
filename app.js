@@ -47,7 +47,37 @@ var feuille = $('#feuille'), scrim = $('#scrim'),
     flNum = $('#fl-num'), flTitre = $('#fl-titre'), flFeat = $('#fl-feat'),
     flBarre = $('#fl-barre'), flRemp = $('#fl-remplissage'), flPoi = $('#fl-poignee'),
     flT1 = $('#fl-t1'), flT2 = $('#fl-t2'), flPP = $('#fl-pp'),
-    fbMaq = $('#fb-maq'), fbIns = $('#fb-ins');
+    flBascule = $('#fl-bascule');
+
+/* Les sources disponibles varient : maquette et instrumental aujourd'hui, version
+   studio quand elle existera. La bascule se construit donc a partir de la piste,
+   et disparait s'il n'y a qu'une seule source. */
+var SOURCES = [
+  { cle: 'maquette', nom: 'Maquette',     icone: 'micro'  },
+  { cle: 'instru',   nom: 'Instrumental', icone: 'note'   },
+  { cle: 'studio',   nom: 'Studio',       icone: 'studio' }
+];
+
+function majBascule(p, actif) {
+  var dispo = SOURCES.filter(function (s) { return p[s.cle]; });
+  flBascule.textContent = '';
+  flBascule.hidden = dispo.length < 2;
+  // a trois sources, les libelles seuls suffisent : avec les icones ca deborde
+  // sur un ecran de 320 px
+  flBascule.classList.toggle('serre', dispo.length >= 3);
+  if (flBascule.hidden) return;
+  dispo.forEach(function (s) {
+    var b = el('button', 'fb' + (s.cle === actif ? ' on' : ''));
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(s.cle === actif));
+    b.appendChild(ic(s.icone, 18));
+    b.appendChild(el('span', null, s.nom));
+    b.addEventListener('click', function () {
+      if (lect.num) charger(lect.num, s.cle, lect.joue);
+    });
+    flBascule.appendChild(b);
+  });
+}
 
 function iconePP(bouton, enLecture) {
   var u = bouton.querySelector('use');
@@ -78,7 +108,8 @@ function majMedia(p) {
   try {
     navigator.mediaSession.metadata = new window.MediaMetadata({
       title: p.titre,
-      artist: lect.src === 'instru' ? 'Instrumental — D.M.P' : 'D.M.P',
+      artist: lect.src === 'instru' ? 'Instrumental — D.M.P'
+            : lect.src === 'studio' ? 'D.M.P — version studio' : 'D.M.P',
       album: 'Résilience',
       artwork: [{ src: ICONE, sizes: '512x512', type: 'image/png' }]
     });
@@ -101,10 +132,7 @@ function charger(num, src, lancer) {
   flNum.textContent = num;
   flTitre.textContent = p.titre;
   flFeat.textContent = p.feat ? 'avec ' + p.feat : 'D.M.P';
-  fbMaq.classList.toggle('on', src === 'maquette');
-  fbMaq.setAttribute('aria-pressed', String(src === 'maquette'));
-  fbIns.classList.toggle('on', src === 'instru');
-  fbIns.setAttribute('aria-pressed', String(src === 'instru'));
+  majBascule(p, src);
   flT2.textContent = mmss(A.duration);
   majMedia(p);
   if (lancer) jouer();
@@ -170,9 +198,6 @@ $('#fl-recul').addEventListener('click', function () { A.currentTime = Math.max(
 $('#fl-avance').addEventListener('click', function () {
   if (isFinite(A.duration)) A.currentTime = Math.min(A.duration, A.currentTime + 15);
 });
-fbMaq.addEventListener('click', function () { if (lect.num) charger(lect.num, 'maquette', lect.joue); });
-fbIns.addEventListener('click', function () { if (lect.num) charger(lect.num, 'instru', lect.joue); });
-
 if ('mediaSession' in navigator) {
   var ms = navigator.mediaSession;
   try {
@@ -190,12 +215,17 @@ if ('mediaSession' in navigator) {
 
 /* ═══════════════════════════ FEUILLE ═══════════════════════════ */
 var feuilleOuverte = false;
+var yGele = 0, declencheur = null;
 function ouvrirFeuille() {
   if (feuilleOuverte || !lect.num) return;
   feuilleOuverte = true;
+  declencheur = document.activeElement;
+  yGele = window.scrollY;
   scrim.hidden = false; feuille.hidden = false;
   scrim.classList.remove('sort'); feuille.classList.remove('sort');
+  document.body.style.top = (-yGele) + 'px';
   document.body.classList.add('fige');
+  $('#vues').setAttribute('inert', '');
   flPP.focus({ preventScroll: true });
 }
 function fermerFeuille() {
@@ -203,6 +233,10 @@ function fermerFeuille() {
   feuilleOuverte = false;
   feuille.classList.add('sort'); scrim.classList.add('sort');
   document.body.classList.remove('fige');
+  document.body.style.top = '';
+  $('#vues').removeAttribute('inert');
+  window.scrollTo(0, yGele);                 // on rend la position exacte
+  if (declencheur && declencheur.focus) declencheur.focus({ preventScroll: true });
   setTimeout(function () {
     if (!feuilleOuverte) { feuille.hidden = true; scrim.hidden = true; }
   }, 220);
@@ -493,59 +527,65 @@ function rendrePiste(num) {
     c.appendChild(a);
   }));
 
-  /* paroles */
+  /* Paroles — PAS d'accordeon englobant. Chaque section se replie seule ; un
+     repliable dans un repliable obligeait a deux ouvertures pour lire un vers. */
   if (p.paroles.length) {
-    box.appendChild(repliable('Paroles', 'texte', p.nbVers + ' vers', true, function (c) {
-      var outils = el('div', 'par-outils');
-      var bt = el('button'); bt.type = 'button';
-      bt.appendChild(el('span', null, 'Tout replier'));
-      var chv = ic('chevron', 16);
-      bt.appendChild(chv);
-      outils.appendChild(bt);
-      c.appendChild(outils);
+    var par = el('section', 'paroles');
 
-      var secs = [];
-      p.paroles.forEach(function (s) {
-        // seul le vrai refrain passe en or : le pre-refrain doit rester distinct
-        var est = /^(refrain|dernier refrain)/i.test(s.tag);
-        var sec = el('div', 'par-sec' + (est ? ' refrain' : ''));
-        sec.dataset.ouvert = '1';
-        var t = el('button', 'par-t'); t.type = 'button';
-        t.setAttribute('aria-expanded', 'true');
-        t.appendChild(el('span', null, s.tag));
-        if (s.voix) t.appendChild(el('em', null, '· ' + s.voix));
-        t.appendChild(el('i'));
-        var ch = ic('chevron', 18); ch.classList.add('chv');
-        t.appendChild(ch);
-        var cc = el('div', 'par-c'), inner = el('div');
-        s.vers.forEach(function (v) { inner.appendChild(el('p', 'vers', v)); });
-        cc.appendChild(inner);
-        t.addEventListener('click', function () {
-          var o = sec.dataset.ouvert === '1';
-          sec.dataset.ouvert = o ? '0' : '1';
-          t.setAttribute('aria-expanded', String(!o));
-          majOutil();
-        });
-        sec.appendChild(t); sec.appendChild(cc);
-        secs.push(sec);
-        c.appendChild(sec);
-      });
+    var tete = el('div', 'par-tete');
+    tete.appendChild(ic('texte', 18));
+    tete.appendChild(el('b', null, 'Paroles'));
+    tete.appendChild(el('span', 'cpt', p.nbVers + ' vers'));
+    var btTout = el('button', 'par-tout'); btTout.type = 'button';
+    btTout.appendChild(el('span', null, 'Tout replier'));
+    var chvTout = ic('chevron', 16); chvTout.classList.add('chv');
+    btTout.appendChild(chvTout);
+    tete.appendChild(btTout);
+    par.appendChild(tete);
 
-      function majOutil() {
-        var ouverts = secs.filter(function (s) { return s.dataset.ouvert === '1'; }).length;
-        bt.firstChild.textContent = ouverts ? 'Tout replier' : 'Tout déplier';
-        chv.style.transform = ouverts ? '' : 'rotate(-90deg)';
-      }
-      bt.addEventListener('click', function () {
-        var ouverts = secs.filter(function (s) { return s.dataset.ouvert === '1'; }).length;
-        var cible = ouverts ? '0' : '1';
-        secs.forEach(function (s) {
-          s.dataset.ouvert = cible;
-          s.querySelector('.par-t').setAttribute('aria-expanded', cible === '1' ? 'true' : 'false');
-        });
+    var secs = [];
+    p.paroles.forEach(function (s) {
+      // seul le vrai refrain passe en or : le pre-refrain doit rester distinct
+      var est = /^(refrain|dernier refrain)/i.test(s.tag);
+      var sec = el('div', 'par-sec' + (est ? ' refrain' : ''));
+      sec.dataset.ouvert = '1';
+      var t = el('button', 'par-t'); t.type = 'button';
+      t.setAttribute('aria-expanded', 'true');
+      t.appendChild(el('span', null, s.tag));
+      if (s.voix) t.appendChild(el('em', null, '\u00b7 ' + s.voix));
+      t.appendChild(el('i'));
+      var ch = ic('chevron', 18); ch.classList.add('chv');
+      t.appendChild(ch);
+      var cc = el('div', 'par-c'), inner = el('div');
+      s.vers.forEach(function (v) { inner.appendChild(el('p', 'vers', v)); });
+      cc.appendChild(inner);
+      t.addEventListener('click', function () {
+        var o = sec.dataset.ouvert === '1';
+        sec.dataset.ouvert = o ? '0' : '1';
+        t.setAttribute('aria-expanded', String(!o));
         majOutil();
       });
-    }));
+      sec.appendChild(t); sec.appendChild(cc);
+      secs.push(sec);
+      par.appendChild(sec);
+    });
+
+    function majOutil() {
+      var ouverts = secs.filter(function (s) { return s.dataset.ouvert === '1'; }).length;
+      btTout.firstChild.textContent = ouverts ? 'Tout replier' : 'Tout d\u00e9plier';
+      chvTout.style.transform = ouverts ? '' : 'rotate(-90deg)';
+    }
+    btTout.addEventListener('click', function () {
+      var ouverts = secs.filter(function (s) { return s.dataset.ouvert === '1'; }).length;
+      var cible = ouverts ? '0' : '1';
+      secs.forEach(function (s) {
+        s.dataset.ouvert = cible;
+        s.querySelector('.par-t').setAttribute('aria-expanded', cible === '1' ? 'true' : 'false');
+      });
+      majOutil();
+    });
+
+    box.appendChild(par);
   }
 
   /* titre suivant : une seule invitation a continuer, pas un bloc de navigation */

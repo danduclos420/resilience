@@ -71,7 +71,9 @@ body{
   transition:padding-bottom var(--t-base) var(--ent);
 }
 body.a-mini{ padding-bottom:calc(var(--h-ong) + var(--h-mini) + var(--sab) + var(--e7)) }
-body.fige{ overflow:hidden }
+/* Verrou de defilement : c'est html qui defile, donc overflow:hidden sur body
+   ne suffit pas. On fige la position et on reporte le decalage. */
+body.fige{ position:fixed; left:0; right:0; width:100%; overflow:hidden }
 
 .anton{font-family:Anton,"Arial Narrow",sans-serif;font-weight:400}
 .mono,.mono *{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
@@ -82,8 +84,11 @@ body.fige{ overflow:hidden }
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* icones : une seule famille, tailles jetonnees */
-.ic{display:block;flex:none;color:currentColor}
+/* Icones : une seule famille, tailles jetonnees.
+   La taille par defaut est indispensable : un SVG sans largeur ni hauteur
+   retombe sur 300x150 px, la taille par defaut des elements remplaces. */
+.ic{display:block;flex:none;color:currentColor;width:20px;height:20px}
+.ic-16{width:16px;height:16px}
 .ic-18{width:18px;height:18px} .ic-20{width:20px;height:20px}
 .ic-22{width:22px;height:22px} .ic-24{width:24px;height:24px}
 .ic-26{width:26px;height:26px} .ic-30{width:30px;height:30px}
@@ -436,6 +441,33 @@ ol,ul{list-style:none;margin:0;padding:0}
 }
 
 /* ═══════════════════════ PAROLES ═══════════════════════ */
+/* Les paroles ne sont plus dans un repliable : c'est une section a part entiere,
+   avec sa propre en-tete. Chaque couplet se replie individuellement. */
+.paroles{margin:var(--e8) 0 0}
+.par-tete{
+  display:flex;align-items:center;gap:var(--e3);
+  padding:0 0 var(--e4);margin:0 0 var(--e5);
+  border-bottom:1px solid var(--ligne);
+}
+.par-tete>svg:first-child{color:var(--or)}
+.par-tete b{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--tx2);font-weight:400;line-height:1.7;
+}
+.par-tete .cpt{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--tx3);
+  font-variant-numeric:tabular-nums;
+}
+.par-tout{
+  margin-left:auto;display:inline-flex;align-items:center;gap:7px;
+  min-height:44px;padding:0 var(--e2) 0 var(--e3);border-radius:9px;
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--tx3);white-space:nowrap;
+  transition:color var(--t-vite) linear,background var(--t-vite) linear;
+}
+.par-tout:active{background:var(--s1);color:var(--tx2)}
+.par-tout .chv{transition:transform var(--t-base) var(--ent)}
+
 .par-sec{margin:0 0 var(--e6)}
 .par-sec:last-child{margin-bottom:0}
 .par-t{
@@ -455,17 +487,13 @@ ol,ul{list-style:none;margin:0;padding:0}
 .par-c{display:grid;grid-template-rows:1fr;transition:grid-template-rows var(--t-lent) var(--ent)}
 .par-sec[data-ouvert="0"] .par-c{grid-template-rows:0fr}
 .par-c>div{overflow:hidden;min-height:0}
-.vers{margin:0;font-size:18px;line-height:1.74;color:var(--tx);letter-spacing:-.012em}
-.par-sec.refrain .vers{color:var(--or-c)}
-
-.par-outils{display:flex;justify-content:flex-end;margin:0 0 var(--e4)}
-.par-outils button{
-  display:inline-flex;align-items:center;gap:var(--e2);min-height:44px;padding:0 var(--e3);
-  border-radius:9px;font-family:"IBM Plex Mono",monospace;font-size:10px;
-  letter-spacing:.18em;text-transform:uppercase;color:var(--tx3);
-  transition:color var(--t-vite) linear,background var(--t-vite) linear;
+/* 65 % des barres depassent une ligne. Retrait negatif : la continuation est
+   decalee, donc elle ne peut plus se confondre avec un nouveau vers. */
+.vers{
+  margin:0;font-size:18px;line-height:1.74;color:var(--tx);letter-spacing:-.012em;
+  font-weight:400;text-indent:-0.9em;padding-left:0.9em;
 }
-.par-outils button:active{background:var(--s1);color:var(--tx2)}
+.par-sec.refrain .vers{color:var(--or-c)}
 
 /* ═══════════════════════ LIEN EXTERNE ═══════════════════════ */
 .ext{
@@ -590,7 +618,7 @@ ol,ul{list-style:none;margin:0;padding:0}
 
 /* ═══════════════════════ LECTEUR PLEIN ═══════════════════════ */
 .scrim{
-  position:fixed;inset:0;z-index:var(--z-scrim);background:#000000A6;
+  position:fixed;inset:0;z-index:var(--z-scrim);background:#000000A6;touch-action:none;
   -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
   animation:scr-ent var(--t-base) linear both;
 }
@@ -642,6 +670,11 @@ ol,ul{list-style:none;margin:0;padding:0}
   transition:background var(--t-base) var(--ent),color var(--t-base) linear;
 }
 .fb.on{background:var(--or-v);color:var(--or-c);box-shadow:inset 0 0 0 1px var(--or-f)}
+.fb span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* trois sources : on retire les icones, les libelles portent seuls */
+.fl-bascule.serre .fb{gap:0;letter-spacing:.1em;font-size:10px}
+.fl-bascule.serre .fb svg{display:none}
+.fl-bascule[hidden]{display:none}
 
 .fl-barre{position:relative;height:40px;display:flex;align-items:center;
   margin:var(--e6) 0 0;touch-action:none;cursor:pointer}
