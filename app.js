@@ -293,9 +293,12 @@ function rendreEcoute() {
     var r = el('span', 'ec-b'); r.appendChild(ic('play', 22)); b.appendChild(r);
     var c = el('span', 'ec-c');
     c.appendChild(el('b', null, p.titre));
-    c.appendChild(el('s', null, p.feat ? 'Maquette · avec ' + p.feat : 'Maquette'));
+    // la duree vit sur la ligne d'info : en colonne, elle tronquait le titre
+    var info = ['Maquette'];
+    if (p.feat) info.push('avec ' + p.feat);
+    info.push(p.duree);
+    c.appendChild(el('s', null, info.join(' · ')));
     b.appendChild(c);
-    b.appendChild(el('span', 'ec-d', p.duree));
     b.addEventListener('click', function () { charger(p.num, 'maquette', true); ouvrirFeuille(); });
     box.appendChild(b);
   });
