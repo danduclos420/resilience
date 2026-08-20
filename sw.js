@@ -1,7 +1,7 @@
 /* Résilience — service worker.
-   Coquille en cache d'abord (l'app s'ouvre sans reseau).
-   Audio en cache au fil de l'ecoute : on ne telecharge jamais 15 Mo d'avance. */
-var VERSION = 'resilience-v3';
+   Coquille en cache d'abord : l'application s'ouvre sans reseau.
+   Audio garde apres une premiere ecoute, puis reservi hors ligne. */
+var VERSION = 'resilience-v4';
 var COQUILLE = VERSION + '-coquille';
 var MEDIA = VERSION + '-media';
 
@@ -28,6 +28,57 @@ self.addEventListener('activate', function (e) {
   );
 });
 
+/* ── audio ───────────────────────────────────────────────────────────────────
+   Une balise <audio> demande des plages d'octets ("Range: bytes=0-"), et le
+   serveur repond 206 avec un fragment. Un fragment ne se met pas en cache : on
+   garde donc le fichier entier sous une cle sans en-tete Range, et on decoupe
+   nous-memes la plage demandee a partir du cache. */
+function decouper(rep, plage) {
+  return rep.arrayBuffer().then(function (buf) {
+    var m = /bytes=(\d*)-(\d*)/.exec(plage) || [];
+    var total = buf.byteLength;
+    var debut = m[1] ? parseInt(m[1], 10) : 0;
+    var fin = m[2] ? parseInt(m[2], 10) : total - 1;
+    if (isNaN(debut) || debut >= total) debut = 0;
+    if (isNaN(fin) || fin >= total) fin = total - 1;
+    return new Response(buf.slice(debut, fin + 1), {
+      status: 206,
+      statusText: 'Partial Content',
+      headers: {
+        'Content-Type': rep.headers.get('Content-Type') || 'audio/mpeg',
+        'Content-Length': String(fin - debut + 1),
+        'Content-Range': 'bytes ' + debut + '-' + fin + '/' + total,
+        'Accept-Ranges': 'bytes'
+      }
+    });
+  });
+}
+
+function servirAudio(req) {
+  var cle = new Request(req.url, { mode: 'same-origin', credentials: 'same-origin' });
+  return caches.open(MEDIA).then(function (cache) {
+    return cache.match(cle).then(function (hit) {
+      var plage = req.headers.get('range');
+      if (hit) return plage ? decouper(hit.clone(), plage) : hit;
+
+      // pas encore garde : on sert le reseau tout de suite, et on telecharge
+      // le fichier entier en arriere-plan pour les prochaines ecoutes
+      var complet = fetch(cle).then(function (rep) {
+        if (rep && rep.ok && rep.status === 200) cache.put(cle, rep.clone());
+        return rep;
+      }).catch(function () { return null; });
+
+      return fetch(req).catch(function () {
+        // hors ligne et rien en cache : on tente quand meme le telechargement complet
+        return complet.then(function (rep) {
+          if (!rep) return new Response('', { status: 504 });
+          return plage ? decouper(rep.clone(), plage) : rep;
+        });
+      });
+    });
+  });
+}
+
 self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
@@ -35,28 +86,13 @@ self.addEventListener('fetch', function (e) {
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // polices Google : laissees au reseau
 
-  // audio : on sert depuis le cache si present, sinon on telecharge et on garde.
-  // Pas de mise en cache des reponses 206 (requetes par plage) : elles sont partielles.
-  if (/\.mp3$/i.test(url.pathname)) {
-    e.respondWith(
-      caches.open(MEDIA).then(function (cache) {
-        return cache.match(req).then(function (hit) {
-          if (hit) return hit;
-          return fetch(req).then(function (rep) {
-            if (rep.ok && rep.status === 200) cache.put(req, rep.clone());
-            return rep;
-          });
-        });
-      })
-    );
-    return;
-  }
+  if (/\.mp3$/i.test(url.pathname)) { e.respondWith(servirAudio(req)); return; }
 
-  // coquille : cache d'abord, puis rafraichissement silencieux en arriere-plan
+  // coquille : cache d'abord, rafraichissement silencieux ensuite
   e.respondWith(
     caches.match(req).then(function (hit) {
       var reseau = fetch(req).then(function (rep) {
-        if (rep.ok) {
+        if (rep && rep.ok && rep.status === 200) {
           var copie = rep.clone();
           caches.open(COQUILLE).then(function (c) { c.put(req, copie); });
         }
