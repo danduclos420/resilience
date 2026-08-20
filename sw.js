@@ -1,7 +1,8 @@
 /* Résilience — service worker.
-   Coquille en cache d'abord : l'application s'ouvre sans reseau.
-   Audio garde apres une premiere ecoute, puis reservi hors ligne. */
-var VERSION = 'resilience-v5';
+   Coquille : reseau d'abord, cache en secours — l'app est toujours a jour quand
+   il y a du signal, et elle s'ouvre quand meme sans reseau.
+   Audio : cache d'abord, garde apres une premiere ecoute. */
+var VERSION = 'resilience-v6';
 var COQUILLE = VERSION + '-coquille';
 var MEDIA = VERSION + '-media';
 
@@ -90,19 +91,20 @@ self.addEventListener('fetch', function (e) {
 
   if (/\.mp3$/i.test(url.pathname)) { e.respondWith(servirAudio(req, e)); return; }
 
-  // coquille : cache d'abord, rafraichissement silencieux ensuite
+  // Coquille : RESEAU d'abord, cache en secours.
+  // L'album avance a chaque titre termine : servir le cache en premier ferait
+  // voir a D.M.P la version precedente. Hors ligne, le cache prend le relais.
   e.respondWith(
-    caches.match(req).then(function (hit) {
-      var reseau = fetch(req).then(function (rep) {
-        if (rep && rep.ok && rep.status === 200) {
-          var copie = rep.clone();
-          caches.open(COQUILLE).then(function (c) { c.put(req, copie); });
-        }
-        return rep;
-      }).catch(function () {
+    fetch(req).then(function (rep) {
+      if (rep && rep.ok && rep.status === 200) {
+        var copie = rep.clone();
+        e.waitUntil(caches.open(COQUILLE).then(function (c) { return c.put(req, copie); }));
+      }
+      return rep;
+    }).catch(function () {
+      return caches.match(req).then(function (hit) {
         return hit || caches.match('./index.html');
       });
-      return hit || reseau;
     })
   );
 });
