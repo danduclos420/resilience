@@ -364,15 +364,9 @@ ol,ul{list-style:none;margin:0;padding:0}
 .etat.chantier{background:var(--att-v);color:var(--att);box-shadow:inset 0 0 0 1px currentColor}
 
 /* ═══════════════════════ JALONS ═══════════════════════ */
-.jalons{display:flex;gap:var(--e2);margin:var(--e6) 0 0}
-.jalon{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
-  padding:var(--e3) var(--e1);border-radius:10px;
-  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em;
-  text-transform:uppercase;line-height:1.6;
-}
-.jalon.ok{background:var(--ok-v);color:var(--ok);box-shadow:inset 0 0 0 1px currentColor}
-.jalon.non{background:var(--att-v);color:var(--att);box-shadow:inset 0 0 0 1px currentColor}
+
+
+
 
 /* ═══════════════════════ LECTEURS DE PISTE ═══════════════════════ */
 .src{display:grid;gap:var(--e2);margin:var(--e6) 0 0}
@@ -493,12 +487,16 @@ ol,ul{list-style:none;margin:0;padding:0}
   text-transform:uppercase;color:var(--tx2);font-weight:400;line-height:1.7;
 }
 .par-tete .cpt{
+  margin-left:auto;white-space:nowrap;
   font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--tx3);
   font-variant-numeric:tabular-nums;
 }
+.par-cmd{display:flex;gap:var(--e2);margin:0 0 var(--e5)}
+.par-cmd>*{flex:1 1 0;min-width:0}
 .par-tout{
-  margin-left:auto;display:inline-flex;align-items:center;gap:7px;
-  min-height:44px;padding:0 var(--e2) 0 var(--e3);border-radius:9px;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:44px;padding:0 var(--e3);border-radius:11px;
+  background:var(--s1);border:1px solid var(--ligne);
   font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--tx3);white-space:nowrap;
   transition:color var(--t-vite) linear,background var(--t-vite) linear;
@@ -532,6 +530,49 @@ ol,ul{list-style:none;margin:0;padding:0}
   font-weight:400;text-indent:-0.9em;padding-left:0.9em;
 }
 .par-sec.refrain .vers{color:var(--or-c)}
+
+/* Le refrain n'etait distingue que par deux cremes voisines (#F3DCA4 contre
+   #F6F1E7) : indiscernable a 18 px sur fond noir. On le marque par la structure. */
+.par-sec.refrain{
+  margin-left:calc(var(--e3) * -1);padding-left:var(--e3);
+  border-left:2px solid var(--or-f);
+}
+
+/* ── masquage progressif ── */
+.par-voile{
+  display:flex;align-items:center;justify-content:center;gap:var(--e2);min-height:44px;
+  padding:0 var(--e3);border-radius:11px;
+  background:var(--s1);border:1px solid var(--ligne);color:var(--tx3);
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;line-height:1.7;
+  transition:background var(--t-base) var(--ent),color var(--t-base) linear,
+             border-color var(--t-base) linear;
+}
+.par-voile.on{background:var(--or-v);color:var(--or-c);border-color:var(--or-f)}
+.par-voile:active{background:var(--s2)}
+.amorce,.suite{transition:opacity var(--t-base) linear}
+/* on garde la silhouette : il doit voir la longueur des barres sans les lire */
+.paroles[data-voile="1"] .suite{opacity:.07}
+.paroles[data-voile="2"] .amorce,
+.paroles[data-voile="2"] .suite{opacity:.07}
+.paroles[data-voile="1"] .vers,
+.paroles[data-voile="2"] .vers{cursor:pointer}
+.vers.revele .amorce,.vers.revele .suite{opacity:1}
+
+/* ── « je la sais » : marche sans audio, donc sur les dix titres ── */
+.su{
+  display:inline-flex;align-items:center;gap:var(--e2);min-height:44px;
+  margin:var(--e3) 0 0;padding:0 var(--e4);border-radius:99px;
+  background:transparent;border:1px dashed var(--ligne2);color:var(--tx3);
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.18em;
+  text-transform:uppercase;line-height:1.7;
+  transition:background var(--t-base) var(--ent),color var(--t-base) linear,
+             border-color var(--t-base) linear;
+}
+.su svg{opacity:.5;transition:opacity var(--t-base) linear}
+.par-sec.sue .su{background:var(--ok-v);border:1px solid var(--ok);color:var(--ok)}
+.par-sec.sue .su svg{opacity:1}
+.cpt.bien{color:var(--ok)}
 
 /* ═══════════════════════ LIEN EXTERNE ═══════════════════════ */
 .ext{
@@ -600,7 +641,10 @@ ol,ul{list-style:none;margin:0;padding:0}
    de prise reelle grace au debord du ::after. */
 .mini-jauge{position:absolute;top:0;left:0;right:0;height:2px;background:var(--ligne2);
   touch-action:none;cursor:pointer}
-.mini-jauge::after{content:'';position:absolute;left:0;right:0;top:-7px;bottom:-7px}
+/* Prise elargie a 26 px. On ne peut pas aller a 44 : vers le bas on couvrirait
+   les boutons, vers le haut on capterait les tapes destinees aux vers. Le
+   curseur conforme de 44 px vit dans la feuille, a une tape. */
+.mini-jauge::after{content:'';position:absolute;left:0;right:0;top:-18px;bottom:-6px}
 .mini-jauge i{display:block;height:100%;width:0;background:var(--or);
   box-shadow:0 0 8px var(--or)}
 .mini-poi{position:absolute;top:1px;left:0;width:11px;height:11px;border-radius:50%;

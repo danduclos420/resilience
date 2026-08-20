@@ -606,7 +606,6 @@ function rendrePiste(num) {
   /* identite */
   var pi = el('div', 'pi' + (p.pret ? ' pret' : ''));
   pi.appendChild(el('span', 'pi-g anton', num));
-  pi.appendChild(el('p', 'pi-k', 'Titre ' + num));
   pi.appendChild(el('h1', null, p.titre));
   if (p.feat) pi.appendChild(el('span', 'pi-f', 'avec ' + p.feat));
   var et = el('span', 'etat ' + (p.pret ? 'pret' : 'chantier'));
@@ -639,34 +638,29 @@ function rendrePiste(num) {
     });
     box.appendChild(s);
   } else {
+    /* Un seul bandeau, et l'alerte de production DEDANS : c'est la consigne la
+       plus actionnable du titre, elle ne doit pas etre une mention au fond
+       d'un bloc replie. */
     var av = el('div', 'avert');
     av.appendChild(ic('chantier', 20));
     var d2 = el('div');
-    d2.appendChild(el('b', null, 'Version de travail'));
-    d2.appendChild(el('p', null, 'Le texte ci-dessous n’est pas définitif et il n’y a pas encore de maquette. Ne l’apprends pas — il sera réécrit avant l’enregistrement.'));
+    d2.appendChild(el('b', null, p.alerte || 'Version de travail'));
+    d2.appendChild(el('p', null, 'Ne l’apprends pas — il sera réécrit avant l’enregistrement.'));
     av.appendChild(d2);
     box.appendChild(av);
   }
 
-  /* l'intention du morceau — ouvert */
-  box.appendChild(repliable('L’idée du morceau', 'reglages', '', true, function (c) {
+  /* Les blocs qu'on lit UNE FOIS passent sous le texte qu'on lit cent fois.
+     On les prepare ici, on les pose apres les paroles. */
+  var secondaires = document.createDocumentFragment();
+
+  secondaires.appendChild(repliable('L’idée du morceau', 'reglages', '', true, function (c) {
     c.appendChild(el('p', 'note', p.note));
-    if (p.reste && p.reste.length) {
-      var r = el('div', 'reste');
-      p.reste.forEach(function (x) { r.appendChild(el('span', 'rj', x)); });
-      c.appendChild(r);
-    }
+    // les puces `reste` valaient mot pour mot ["Texte","Instru","Maquette"] sur
+    // les huit titres en chantier : c'est le booleen p.pret redit une fois de plus
   }));
 
-  if (p.alerte) {
-    var al = el('div', 'alerte');
-    al.appendChild(ic('chantier', 20));
-    al.appendChild(el('p', null, p.alerte));
-    box.appendChild(al);
-  }
-
-  /* fiche technique — repliee par defaut */
-  box.appendChild(repliable('Fiche technique', 'album', '', false, function (c) {
+  secondaires.appendChild(repliable('Fiche technique', 'album', '', false, function (c) {
     var dl = el('dl', 'fiche');
     var lignes = [['Tempo', p.bpm + ' BPM' + (p.pret ? '' : ' visé')]];
     if (p.ton) lignes.push(['Tonalité', p.ton]);
@@ -703,14 +697,43 @@ function rendrePiste(num) {
     tete.appendChild(ic('texte', 18));
     tete.appendChild(el('b', null, 'Paroles'));
     var nbReels = sections.reduce(function (n, s) { return n + s.vers.length; }, 0);
-    tete.appendChild(el('span', 'cpt', nbReels + ' vers'));
+    var cpt = el('span', 'cpt', nbReels + ' vers');
+    tete.appendChild(cpt);
+    /* Masquage progressif : le seul outil d'apprentissage qui marche sur les
+       huit titres sans maquette. Une tape par cran, l'etat ecrit en toutes
+       lettres, et le retour au texte entier coute une tape depuis n'importe
+       quel cran. */
+    var VOILES = ['Texte entier', 'Amorce', 'Masqué'];
+    var btVoile = el('button', 'par-voile'); btVoile.type = 'button';
+    btVoile.appendChild(ic('reglages', 16));
+    var etiqVoile = el('span', null, VOILES[0]);
+    btVoile.appendChild(etiqVoile);
+    btVoile.addEventListener('click', function () {
+      var v = (parseInt(par.dataset.voile, 10) + 1) % 3;
+      par.dataset.voile = String(v);
+      etiqVoile.textContent = VOILES[v];
+      btVoile.classList.toggle('on', v > 0);
+      btVoile.setAttribute('aria-label', 'Masquage : ' + VOILES[v] + '. Toucher pour changer.');
+      $$('.vers.revele', par).forEach(function (x) { x.classList.remove('revele'); });
+      memoire.voile = v; retenir(true);
+    });
+
     var btTout = el('button', 'par-tout'); btTout.type = 'button';
     btTout.appendChild(el('span', null, 'Tout replier'));
     var chvTout = ic('chevron', 16); chvTout.classList.add('chv');
     btTout.appendChild(chvTout);
-    // avec une seule section, un « tout replier » et un chevron n'ont pas de sens
-    if (sections.length > 1) tete.appendChild(btTout);
     par.appendChild(tete);
+
+    /* Les commandes sur leur propre rangee : entassees avec le titre et le
+       compteur, elles cassaient la ligne sur un ecran de 320 px. */
+    var cmd = el('div', 'par-cmd');
+    cmd.appendChild(btVoile);
+    // avec une seule section, un « tout replier » n'a pas de sens
+    if (sections.length > 1) cmd.appendChild(btTout);
+    par.appendChild(cmd);
+    par.dataset.voile = String(memoire.voile || 0);
+    etiqVoile.textContent = VOILES[memoire.voile || 0];
+    btVoile.classList.toggle('on', (memoire.voile || 0) > 0);
 
     // « Refrain » apparait deux fois dans plusieurs titres, avec des contenus
     // differents : on numerote les occurrences pour qu'elles se distinguent
@@ -739,7 +762,22 @@ function rendrePiste(num) {
       var ch = ic('chevron', 18); ch.classList.add('chv');
       t.appendChild(ch);
       var cc = el('div', 'par-c'), inner = el('div');
-      s.vers.forEach(function (v) { inner.appendChild(el('p', 'vers', v)); });
+      s.vers.forEach(function (v) {
+        var ligne = el('p', 'vers');
+        // amorce = les deux premiers mots. C'est le fil qui permet de retrouver
+        // la suite de tete ; on masque le reste sans deplacer la mise en page.
+        var m = /^(\s*\S+(?:\s+\S+)?)([\s\S]*)$/.exec(v);
+        if (m) {
+          ligne.appendChild(el('span', 'amorce', m[1]));
+          if (m[2]) ligne.appendChild(el('span', 'suite', m[2]));
+        } else {
+          ligne.appendChild(el('span', 'amorce', v));
+        }
+        ligne.addEventListener('click', function () {
+          if (par.dataset.voile !== '0') ligne.classList.toggle('revele');
+        });
+        inner.appendChild(ligne);
+      });
       cc.appendChild(inner);
       t.addEventListener('click', function () {
         var o = sec.dataset.ouvert === '1';
@@ -748,11 +786,39 @@ function rendrePiste(num) {
         majOutil();
         retenirReplis();
       });
+      // « Je la sais » : le suivi d'acquisition ne demande aucun audio, donc il
+      // fonctionne aussi sur les huit titres sans maquette.
+      var sues = memoire.sues && memoire.sues[num] ? memoire.sues[num] : [];
+      var su = el('button', 'su'); su.type = 'button';
+      su.appendChild(ic('check', 18));
+      su.appendChild(el('span', null, 'Je la sais'));
+      function majSu() {
+        var actif = sec.classList.contains('sue');
+        su.setAttribute('aria-pressed', String(actif));
+        su.querySelector('span').textContent = actif ? 'Sue' : 'Je la sais';
+      }
+      if (sues[iSec] === 1) sec.classList.add('sue');
+      majSu();
+      su.addEventListener('click', function () {
+        sec.classList.toggle('sue');
+        majSu();
+        if (!memoire.sues) memoire.sues = {};
+        memoire.sues[num] = secs.map(function (x) { return x.classList.contains('sue') ? 1 : 0; });
+        retenir(true);
+        majCompteurSues();
+      });
+      inner.appendChild(su);
+
       sec.appendChild(t); sec.appendChild(cc);
       secs.push(sec);
       par.appendChild(sec);
     });
 
+    function majCompteurSues() {
+      var n = secs.filter(function (x) { return x.classList.contains('sue'); }).length;
+      cpt.textContent = n ? n + ' / ' + secs.length + ' sues' : nbReels + ' vers';
+      cpt.classList.toggle('bien', n === secs.length && n > 0);
+    }
     function retenirReplis() {
       memoire.replis[num] = secs.map(function (x) { return x.dataset.ouvert === '1' ? 1 : 0; });
       retenir();
@@ -773,8 +839,11 @@ function rendrePiste(num) {
       retenirReplis();
     });
 
+    majCompteurSues();
     box.appendChild(par);
   }
+
+  box.appendChild(secondaires);
 
   /* titre suivant : une seule invitation a continuer, pas un bloc de navigation */
   var i = P.indexOf(p);
