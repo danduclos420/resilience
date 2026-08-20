@@ -28,8 +28,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
 .kicker{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.5em;
   text-transform:uppercase;color:var(--or);margin:0 0 26px;padding-left:.5em}
 /* Anton a besoin de ~1.45x la taille de police (mesure sur la page en ligne) pour contenir ses glyphes accentues.
-   On donne 1.4 d'interligne (sinon le degrade decapite les majuscules accentuees)
-   et on rattrape l'air en marge negative, qui ne rogne pas la boite de fond. */
+   On donne 1.5 (sinon le degrade decapite les majuscules accentuees comme le E de
+   RESILIENCE) et on rattrape l'air en marge negative, qui ne rogne pas la boite de fond. */
 .titre{margin:-.22em 0 -.20em;line-height:1.5;text-transform:uppercase;letter-spacing:-.012em;
   padding:0;font-size:clamp(54px,20.5vw,132px);
   background:linear-gradient(176deg,#FFFDF8 4%,var(--or-l) 30%,var(--or) 58%,#6E5219 100%);
