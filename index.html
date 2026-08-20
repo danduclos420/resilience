@@ -4,99 +4,192 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Résilience — D.M.P</title>
-<meta name="description" content="Album Résilience de D.M.P. Dix titres : ce qui est prêt pour la cabine et ce qui reste à faire.">
+<meta name="description" content="L'album Résilience de D.M.P : avancement des dix titres, maquettes à écouter et paroles.">
 <meta name="theme-color" content="#060505">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Résilience">
+<meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Résilience">
 <meta property="og:title" content="Résilience — D.M.P">
-<meta property="og:description" content="Album Résilience de D.M.P. Dix titres : ce qui est prêt pour la cabine et ce qui reste à faire.">
-<meta property="og:locale" content="fr_CA">
+<meta property="og:description" content="Dix titres. L'avancement de l'album, les maquettes et les paroles.">
 <meta property="og:image" content="og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:locale" content="fr_CA">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23060505'/%3E%3Ctext x='32' y='46' font-family='Arial Black,Arial,sans-serif' font-size='40' font-weight='900' text-anchor='middle' fill='%23D4A94A'%3ER%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="style.css?v=61643430">
+<link rel="stylesheet" href="app.css">
 </head>
 <body>
-<div class="wrap">
-<header class="hero">
-  <p class="kicker">Album · dix titres</p>
-  <h1 class="titre anton">Résilience</h1>
-  <p class="artiste">D.M.P</p>
-</header>
-<section class="prio">
-  <div class="prio-t">
-    <span class="k">Deux titres prêts</span>
-    <h2>À apprendre maintenant</h2>
-    <p>Texte final, instrumental final, maquette écoutable sur place.</p>
-  </div>
-  <a class="pcarte" href="t01.html">
-    <div class="haut">
-      <span class="rond">01</span>
-      <span class="nom"><b>Amour inconditionnel</b><s>avec Aametys</s></span>
-      <span class="dur2">2:22</span>
+
+<!-- Jeu d'icones : grille 24, trait 1.75, bouts arrondis. Aucun emoji. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="ic-album" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6"/></symbol>
+<symbol id="ic-ecouter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><path d="M4 16.5A2.5 2.5 0 0 1 6.5 14H7v6h-.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M20 16.5a2.5 2.5 0 0 0-2.5-2.5H17v6h.5a2.5 2.5 0 0 0 2.5-2.5z"/></symbol>
+<symbol id="ic-guide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H11v17H5.5A2.5 2.5 0 0 0 3 22z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H13v17h5.5a2.5 2.5 0 0 1 2.5 2z"/></symbol>
+<symbol id="ic-retour" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="ic-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="ic-suivant" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
+<symbol id="ic-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7.5 4.8a1 1 0 0 1 1.53-.85l10 7.2a1 1 0 0 1 0 1.7l-10 7.2A1 1 0 0 1 7.5 19.2z"/></symbol>
+<symbol id="ic-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="4.5" width="4" height="15" rx="1.1"/><rect x="13.5" y="4.5" width="4" height="15" rx="1.1"/></symbol>
+<symbol id="ic-recul" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5v5h5"/><path d="M3.9 10.6a8.5 8.5 0 1 1 .5 6.2"/></symbol>
+<symbol id="ic-avance" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 5.5v5h-5"/><path d="M20.1 10.6a8.5 8.5 0 1 0-.5 6.2"/></symbol>
+<symbol id="ic-micro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/></symbol>
+<symbol id="ic-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></symbol>
+<symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></symbol>
+<symbol id="ic-chantier" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.6v5"/><path d="M12 16.3h.01"/></symbol>
+<symbol id="ic-externe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4h7v7"/><path d="M20 4l-9 9"/><path d="M18 14.5V19a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 19V8a1.5 1.5 0 0 1 1.5-1.5H10"/></symbol>
+<symbol id="ic-texte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 11h16"/><path d="M4 16h10"/></symbol>
+<symbol id="ic-reglages" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10"/><circle cx="17" cy="7" r="2.4"/><path d="M20 17H10"/><circle cx="7" cy="17" r="2.4"/></symbol>
+</defs></svg>
+
+<div class="grain" aria-hidden="true"></div>
+
+<main id="vues">
+
+  <!-- ═══════════════ ALBUM ═══════════════ -->
+  <section class="vue" id="v-album" data-vue="album">
+    <header class="hero">
+      <p class="hero-k">Album · dix titres</p>
+      <h1 class="hero-t anton">Résilience</h1>
+      <p class="hero-a">D.M.P</p>
+    </header>
+
+    <section class="prog">
+      <div class="anneau">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="an-f" cx="60" cy="60" r="52"/>
+          <circle class="an-t" cx="60" cy="60" r="52" id="anneau"/>
+        </svg>
+        <span class="an-c"><b class="anton" id="prog-n">0</b><i>sur 10</i></span>
+      </div>
+      <h2 class="prog-h">Prêts pour la cabine</h2>
+      <p class="prog-p" id="prog-d">Texte final, instrumental final et maquette à écouter.</p>
+    </section>
+
+    <div class="lst-t"><span>Les dix titres</span><i></i></div>
+    <ol class="lst" id="lst-pistes"></ol>
+  </section>
+
+  <!-- ═══════════════ ECOUTER ═══════════════ -->
+  <section class="vue" id="v-ecouter" data-vue="ecouter" hidden>
+    <header class="vh">
+      <p class="vh-k">À apprendre</p>
+      <h1 class="vh-t">Écouter</h1>
+      <p class="vh-p">Les titres dont la maquette est prête. La lecture continue pendant que tu navigues.</p>
+    </header>
+    <div id="lst-ecoute"></div>
+  </section>
+
+  <!-- ═══════════════ GUIDE ═══════════════ -->
+  <section class="vue" id="v-guide" data-vue="guide" hidden>
+    <header class="vh">
+      <p class="vh-k">Pour s'y retrouver</p>
+      <h1 class="vh-t">Guide</h1>
+      <p class="vh-p">Les mots qui reviennent dans l'application.</p>
+    </header>
+    <div id="lst-guide"></div>
+    <div class="note-pied">
+      <p><b>Les maquettes servent à apprendre, pas à imiter.</b> La voix témoin a un accent français d'Europe. Ce qu'il faut y prendre, c'est la mélodie du refrain, le placement des phrases et le découpage en mesures. L'accent, c'est en cabine.</p>
+      <p>Les textes marqués <b>version de travail</b> ne sont pas définitifs. Ils seront réécrits avant l'enregistrement — inutile de les apprendre maintenant.</p>
     </div>
-    <div class="pied">Ouvrir · écouter · lire les paroles</div>
-  </a>
-  <a class="pcarte" href="t02.html">
-    <div class="haut">
-      <span class="rond">02</span>
-      <span class="nom"><b>Frère de sang</b><s>Prêt pour la cabine</s></span>
-      <span class="dur2">2:48</span>
+  </section>
+
+  <!-- ═══════════════ PISTE (vue poussee) ═══════════════ -->
+  <section class="vue vue-piste" id="v-piste" data-vue="piste" hidden>
+    <div class="tete">
+      <button class="tete-b" id="btn-retour" aria-label="Revenir aux titres">
+        <svg class="ic ic-20"><use href="#ic-retour"/></svg>
+      </button>
+      <span class="tete-t" id="tete-titre"></span>
+      <span class="tete-n mono" id="tete-num"></span>
     </div>
-    <div class="pied">Ouvrir · écouter · lire les paroles</div>
-  </a>
-</section>
-<section class="compteur">
-  <p class="lab">État de l'album</p>
-  <div class="chiffre"><b class="anton">2</b><i>/10</i></div>
-  <p>titres terminés — texte, instrumental et maquette</p>
-  <div class="jauge"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-</section>
-<nav class="somm">
-  <div class="sect-lab"><span>Les dix titres</span><hr></div>
-  <a class="ligne on" href="t01.html"><span class="n anton">01</span><span class="t">Amour inconditionnel<s>avec Aametys · 160 BPM · La mineur</s></span><span class="p"></span><span class="fl">›</span></a>
-  <a class="ligne on" href="t02.html"><span class="n anton">02</span><span class="t">Frère de sang<s>101 BPM · Do# mineur</s></span><span class="p"></span><span class="fl">›</span></a>
-  <a class="ligne" href="t03.html"><span class="n anton">03</span><span class="t">Plaindre<s>120 BPM visé</s></span><span class="p"></span><span class="fl">›</span></a>
-  <a class="ligne" href="t04.html"><span class="n anton">04</span><span class="t">Héritage<s>122 BPM visé · Ré mineur</s></span><span class="p"></span><span class="fl">›</span></a>
-  <a class="ligne" href="t05.html"><span class="n anton">05</span><span class="t">Coração<s>français &amp; portugais · 94 BPM visé · Ré mineur</s></span><span class="p"></span><span class="fl">›</span></a>
-  <a class="ligne" href="t06.html"><span class="n anton">06</span><span class="t">Pas du cinéma<s>avec Xplicit · 160 BPM visé</s></span><span class="p"></span><span class="fl">›</span></a>
-  <a class="ligne" href="t07.html"><span class="n anton">07</span><span class="t">Sous-estimé<s>avec DawaMafia · 158 BPM visé</s></span><span class="p"></span><span class="fl">›</span></a>
-  <a class="ligne" href="t08.html"><span class="n anton">08</span><span class="t">Hometown<s>avec Jason Elmourne · 115 BPM visé · Do majeur</s></span><span class="p"></span><span class="fl">›</span></a>
-  <a class="ligne" href="t09.html"><span class="n anton">09</span><span class="t">Reine sans couronne<s>120 BPM visé · Do majeur</s></span><span class="p"></span><span class="fl">›</span></a>
-  <a class="ligne" href="t10.html"><span class="n anton">10</span><span class="t">Tel père, tel fils<s>100 BPM visé · La mineur</s></span><span class="p"></span><span class="fl">›</span></a>
-  <div class="legende"><span><b class="v"></b> Terminé</span><span><b class="r"></b> À faire</span></div>
-</nav>
-<section class="gloss" id="glossaire">
-  <div class="sect-lab"><span>Pour s'y retrouver</span><hr></div>
-  <h2 class="anton">Glossaire</h2>
-  <p class="intro">Les mots qui reviennent sur ce site.</p>
-  <dl>
-    <div class="gl"><dt>Maquette</dt><dd>La version d'essai du morceau, chantée par une voix générée. Elle sert à <b>apprendre</b> la mélodie, le placement des phrases et le découpage en mesures — pas à imiter la voix ni l'accent.</dd></div>
-    <div class="gl"><dt>Instrumental</dt><dd>Le beat seul, sans voix. C'est dessus qu'on enregistre en studio.</dd></div>
-    <div class="gl"><dt>Référence</dt><dd>Le morceau existant qui a servi de modèle — pour le tempo, l'ambiance et la construction. On ne le copie pas, on s'en sert de repère.</dd></div>
-    <div class="gl"><dt>BPM</dt><dd>Battements par minute : la vitesse du morceau. Plus le chiffre est haut, plus c'est rapide.</dd></div>
-    <div class="gl"><dt>Tonalité</dt><dd>La note autour de laquelle le morceau est construit. C'est elle qui décide si le chant tombe dans une zone confortable pour la voix.</dd></div>
-    <div class="gl"><dt>Mesure</dt><dd>L'unité de découpage du morceau — quatre temps. On compte en mesures pour placer chaque phrase exactement au bon endroit.</dd></div>
-    <div class="gl"><dt>Version de travail</dt><dd>Un texte encore provisoire. <b>À ne pas apprendre</b> : il sera réécrit avant l'enregistrement.</dd></div>
-    <div class="gl"><dt>Prêt pour la cabine</dt><dd>Texte final, instrumental final, maquette disponible. Le morceau peut être enregistré.</dd></div>
-  </dl>
-</section>
-<footer>
-  <p><b>Les maquettes servent à apprendre, pas à imiter.</b> La voix témoin a un accent français d'Europe. Ce qu'il faut y prendre, c'est la mélodie du refrain, le placement des phrases et le découpage en mesures. L'accent, c'est en cabine.</p>
-  <p>Les paroles marquées <b>version de travail</b> ne sont pas définitives. Elles seront réécrites avant l'enregistrement — inutile de les apprendre maintenant.</p>
-  <p class="sign">Résilience</p>
-</footer>
+    <div id="piste-corps"></div>
+  </section>
+
+</main>
+
+<!-- ═══════════════ MINI-LECTEUR ═══════════════ -->
+<div class="mini" id="mini" hidden>
+  <div class="mini-jauge"><i id="mini-jauge"></i></div>
+  <button class="mini-ouvre" id="mini-ouvre" aria-label="Ouvrir le lecteur">
+    <span class="mini-n anton" id="mini-num"></span>
+    <span class="mini-txt"><b id="mini-titre"></b><s id="mini-source"></s></span>
+  </button>
+  <button class="mini-pp" id="mini-pp" aria-label="Lecture">
+    <svg class="ic ic-22"><use href="#ic-play"/></svg>
+  </button>
 </div>
+
+<!-- ═══════════════ ONGLETS ═══════════════ -->
+<nav class="onglets" id="onglets" aria-label="Navigation principale">
+  <a class="ong" href="#album" data-ong="album">
+    <svg class="ic ic-24"><use href="#ic-album"/></svg><span>Album</span>
+  </a>
+  <a class="ong" href="#ecouter" data-ong="ecouter">
+    <svg class="ic ic-24"><use href="#ic-ecouter"/></svg><span>Écouter</span>
+  </a>
+  <a class="ong" href="#guide" data-ong="guide">
+    <svg class="ic ic-24"><use href="#ic-guide"/></svg><span>Guide</span>
+  </a>
+</nav>
+
+<!-- ═══════════════ LECTEUR PLEIN ═══════════════ -->
+<div class="scrim" id="scrim" hidden></div>
+<section class="feuille" id="feuille" hidden role="dialog" aria-modal="true" aria-label="Lecteur">
+  <button class="fl-poignee-b" id="feuille-ferme" aria-label="Fermer le lecteur"><i></i></button>
+  <div class="fl-haut">
+    <span class="fl-num anton" id="fl-num"></span>
+    <span class="fl-id"><b id="fl-titre"></b><s id="fl-feat"></s></span>
+  </div>
+
+  <div class="fl-bascule" id="fl-bascule">
+    <button class="fb on" id="fb-maq" aria-pressed="true">
+      <svg class="ic ic-18"><use href="#ic-micro"/></svg><span>Maquette</span>
+    </button>
+    <button class="fb" id="fb-ins" aria-pressed="false">
+      <svg class="ic ic-18"><use href="#ic-note"/></svg><span>Instrumental</span>
+    </button>
+  </div>
+
+  <div class="fl-barre" id="fl-barre" role="slider" tabindex="0"
+       aria-label="Position de lecture" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <i class="fl-piste"><b id="fl-remplissage"></b></i>
+    <span class="fl-poignee" id="fl-poignee"></span>
+  </div>
+  <div class="fl-temps">
+    <span class="mono" id="fl-t1">0:00</span>
+    <span class="mono" id="fl-t2">--:--</span>
+  </div>
+
+  <div class="fl-cmd">
+    <button class="fc" id="fl-recul" aria-label="Reculer de quinze secondes">
+      <svg class="ic ic-26"><use href="#ic-recul"/></svg><em class="mono">15</em>
+    </button>
+    <button class="fc fc-pp" id="fl-pp" aria-label="Lecture">
+      <svg class="ic ic-30"><use href="#ic-play"/></svg>
+    </button>
+    <button class="fc" id="fl-avance" aria-label="Avancer de quinze secondes">
+      <svg class="ic ic-26"><use href="#ic-avance"/></svg><em class="mono">15</em>
+    </button>
+  </div>
+
+  <button class="fl-vers" id="fl-vers">
+    <svg class="ic ic-18"><use href="#ic-texte"/></svg><span>Voir les paroles</span>
+    <svg class="ic ic-18 fl-fl"><use href="#ic-suivant"/></svg>
+  </button>
+</section>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
