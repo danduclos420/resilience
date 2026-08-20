@@ -7,7 +7,7 @@
   --vert:#7FD3A2; --vert-soft:#7FD3A216; --rouge:#DE7C80; --rouge-soft:#DE7C8014;
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;background:#060505}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;background:#060505;overflow-x:clip}
 body{margin:0;background:var(--noir);color:var(--creme);
   font-family:Fraunces,Georgia,serif;font-size:17px;line-height:1.62;font-weight:300;
   -webkit-font-smoothing:antialiased;overflow-x:hidden}
@@ -22,8 +22,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
 .hero{display:flex;flex-direction:column;align-items:center;text-align:center;
   position:relative;padding:66px 0 40px}
 .hero::before{content:'';position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
-  width:min(160vw,1000px);aspect-ratio:1;pointer-events:none;
-  background:radial-gradient(circle,#5A410E4D 0%,#2A1E0726 34%,transparent 66%)}
+  width:min(100vw,860px);aspect-ratio:1;pointer-events:none;
+  background:radial-gradient(circle,#5A410E52 0%,#2A1E072B 40%,transparent 72%)}
 .hero>*{position:relative}
 .kicker{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.5em;
   text-transform:uppercase;color:var(--or);margin:0 0 26px;padding-left:.5em}
