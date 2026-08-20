@@ -13,14 +13,19 @@ body{margin:0;background:var(--noir);color:var(--creme);
   -webkit-font-smoothing:antialiased;overflow-x:hidden}
 body::after{content:'';position:fixed;inset:-50%;z-index:3;pointer-events:none;opacity:.055;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E")}
-.wrap{position:relative;z-index:2;max-width:700px;margin:0 auto;padding:0 22px 110px}
+/* iOS : la page passe SOUS la barre d'etat (status-bar-style translucide), donc
+   chaque bord doit respecter env(safe-area-inset-*) sinon l'encoche mange le contenu. */
+.wrap{position:relative;z-index:2;max-width:700px;margin:0 auto;
+  padding-left:max(22px,env(safe-area-inset-left));
+  padding-right:max(22px,env(safe-area-inset-right));
+  padding-bottom:calc(110px + env(safe-area-inset-bottom));padding-top:0}
 .anton{font-family:Anton,"Arial Narrow",sans-serif;font-weight:400}
 .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
 a{color:inherit}
 a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:4px;border-radius:3px}
 
 .hero{display:flex;flex-direction:column;align-items:center;text-align:center;
-  position:relative;padding:66px 0 40px}
+  position:relative;padding:calc(58px + env(safe-area-inset-top)) 0 40px}
 .hero::before{content:'';position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
   width:min(100vw,860px);aspect-ratio:1;pointer-events:none;
   background:radial-gradient(circle,#5A410E52 0%,#2A1E072B 40%,transparent 72%)}
@@ -138,14 +143,18 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
 
 .topbar{position:sticky;top:0;z-index:6;background:#060505F2;
   -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--trait)}
-.topbar .in{max-width:700px;margin:0 auto;padding:0 22px;height:54px;
-  display:flex;align-items:center;gap:12px}
-.topbar a{display:inline-flex;align-items:center;gap:9px;text-decoration:none;
-  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.26em;
-  text-transform:uppercase;color:var(--creme3)}
-.topbar .num{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
-  letter-spacing:.26em;color:var(--trait2)}
+  border-bottom:1px solid var(--trait);padding-top:env(safe-area-inset-top)}
+.topbar .in{max-width:700px;margin:0 auto;height:56px;display:flex;align-items:center;gap:12px;
+  padding-left:max(16px,env(safe-area-inset-left));
+  padding-right:max(16px,env(safe-area-inset-right))}
+.topbar a{display:inline-flex;align-items:center;gap:10px;text-decoration:none;
+  height:44px;padding:0 12px 0 6px;margin-left:-6px;border-radius:6px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--creme2)}
+.topbar a:active{background:var(--carte2)}
+.topbar a .ch{font-size:19px;line-height:1.5;color:var(--or);letter-spacing:0}
+.topbar .num{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  letter-spacing:.24em;color:var(--creme3)}
 
 .thead{position:relative;padding:46px 0 0;overflow:hidden}
 .thead .ghost{position:absolute;top:0;right:0;z-index:0;pointer-events:none;
@@ -200,7 +209,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
   letter-spacing:.18em;text-transform:uppercase;color:var(--trait2);flex:none}
 
 .paroles{margin:64px 0 0}
-.sec{margin:0 0 40px}
+.paroles .sec{margin:0 0 40px}
 .sectag{display:flex;align-items:baseline;gap:11px;margin:0 0 17px;
   font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.28em;
   text-transform:uppercase;color:var(--or);font-weight:400;line-height:1.8}
@@ -208,8 +217,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
 .sectag em{font-style:normal;color:var(--creme3);letter-spacing:.16em}
 .vers{margin:0;font-size:18.5px;line-height:1.74;color:var(--creme);
   letter-spacing:-.012em;padding:1px 0}
-.sec.refrain .vers{color:var(--or-l)}
-.sec.refrain .sectag{color:var(--or-l)}
+.paroles .sec.refrain .vers{color:var(--or-l)}
+.paroles .sec.refrain .sectag{color:var(--or-l)}
 
 .paged{display:flex;gap:10px;margin:70px 0 0}
 .paged a{flex:1;min-height:66px;display:flex;flex-direction:column;justify-content:center;
@@ -221,6 +230,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .paged a.d{text-align:right}
 .paged a.vide{visibility:hidden}
+/* En PWA il n'y a pas de bouton retour du navigateur : le chemin du retour
+   doit etre visible sur chaque page. */
+.basnav{display:flex;gap:10px;margin:12px 0 0;align-items:stretch}
+/* hauteur fixe : deux boutons cote a cote doivent etre identiques, quoi qu'il arrive */
+.basnav a{flex:1 1 0;height:60px;display:flex;align-items:center;justify-content:center;
+  gap:9px;border-radius:5px;text-decoration:none;font-size:15.5px;letter-spacing:-.01em;
+  background:linear-gradient(120deg,#221907,#141010);border:1px solid var(--or-d);
+  color:var(--or-l);white-space:nowrap;line-height:1.4;overflow:hidden}
+.basnav a.b2{background:var(--carte);border:1px solid var(--trait);color:var(--creme2)}
+.basnav a:active{background:var(--carte2)}
+.basnav a i{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:14px;opacity:.8}
 
 .gloss{margin:94px 0 0}
 .gloss h2{font-family:Anton,sans-serif;font-size:clamp(30px,8.6vw,40px);text-transform:uppercase;
@@ -239,7 +259,12 @@ footer p{margin:0 0 14px}
 .sign{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.4em;
   text-transform:uppercase;color:var(--trait2);margin-top:40px;text-align:center;padding-left:.4em}
 
-@media (min-width:620px){ body{font-size:17.5px} .wrap{padding:0 40px 120px}
-  .topbar .in{padding:0 40px} .vers{font-size:19.5px} }
+@media (min-width:620px){ body{font-size:17.5px} .vers{font-size:19.5px}
+  /* on elargit sans ecraser les env(safe-area-inset-*) poses plus haut */
+  .wrap{padding-left:max(40px,env(safe-area-inset-left));
+        padding-right:max(40px,env(safe-area-inset-right));
+        padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+  .topbar .in{padding-left:max(34px,env(safe-area-inset-left));
+              padding-right:max(40px,env(safe-area-inset-right))} }
 @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important}
   html{scroll-behavior:auto} }
