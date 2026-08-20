@@ -2,9 +2,11 @@
    Coquille : reseau d'abord, cache en secours — l'app est toujours a jour quand
    il y a du signal, et elle s'ouvre quand meme sans reseau.
    Audio : cache d'abord, garde apres une premiere ecoute. */
-var VERSION = 'resilience-v6';
+var VERSION = 'resilience-v7';
 var COQUILLE = VERSION + '-coquille';
-var MEDIA = VERSION + '-media';
+/* Le media n'est PAS versionne : une mise a jour de l'app ne doit jamais
+   obliger a retelecharger les maquettes deja ecoutees. */
+var MEDIA = 'resilience-media';
 
 var FICHIERS = [
   './', './index.html', './app.css', './app.js', './data.js',
@@ -23,7 +25,10 @@ self.addEventListener('activate', function (e) {
   e.waitUntil(
     caches.keys().then(function (cles) {
       return Promise.all(cles.map(function (k) {
-        if (k !== COQUILLE && k !== MEDIA) return caches.delete(k);
+        // on ne touche qu'a nos propres caches, et jamais au media
+        if (k.indexOf('resilience-') === 0 && k !== COQUILLE && k !== MEDIA) {
+          return caches.delete(k);
+        }
       }));
     }).then(function () { return self.clients.claim(); })
   );
