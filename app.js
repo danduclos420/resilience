@@ -691,6 +691,10 @@ function rendrePiste(num) {
     return s.vers.some(function (v) { return /[a-zà-ÿ0-9]/i.test(v); });
   });
   if (sections.length) {
+    // Sentinelle de hauteur nulle : elle traverse franchement le haut de l'ecran,
+    // alors qu'un bloc de plusieurs milliers de pixels reste en intersection
+    // permanente et ne bascule jamais.
+    box.appendChild(el('i', 'rail-sentinelle'));
     var par = el('section', 'paroles');
 
     var tete = el('div', 'par-tete');
@@ -769,7 +773,7 @@ function rendrePiste(num) {
         var m = /^(\s*\S+(?:\s+\S+)?)([\s\S]*)$/.exec(v);
         if (m) {
           ligne.appendChild(el('span', 'amorce', m[1]));
-          if (m[2]) ligne.appendChild(el('span', 'suite', m[2]));
+          if (m[2]) ligne.appendChild(el('span', 'vsuite', m[2]));
         } else {
           ligne.appendChild(el('span', 'amorce', v));
         }
@@ -810,6 +814,9 @@ function rendrePiste(num) {
       inner.appendChild(su);
 
       sec.appendChild(t); sec.appendChild(cc);
+      sec.id = 'sec-' + num + '-' + iSec;
+      sec.dataset.libelle = libelle;
+      sec.dataset.refrain = est ? '1' : '0';
       secs.push(sec);
       par.appendChild(sec);
     });
@@ -841,6 +848,7 @@ function rendrePiste(num) {
 
     majCompteurSues();
     box.appendChild(par);
+    construireRail(secs);
   }
 
   box.appendChild(secondaires);
@@ -866,6 +874,57 @@ function majModeTravail(r) {
   r = r || route();
   var travail = (r.vue === 'piste' && lect.num === r.num);
   mini.classList.toggle('travail', travail);
+}
+
+/* ═══════════════════════════ RAIL DE SECTIONS ═══════════════════════════ */
+/* Il repond a « ou suis-je » et a « emmene-moi la » avec le meme objet. Il
+   remplace le titre dans la barre du haut des qu'on entre dans le texte : c'est
+   la meme information, vue de pres. */
+var rail = $('#rail'), obsSec = null, obsSentinelle = null, verrouRail = 0;
+
+function construireRail(secs) {
+  rail.textContent = '';
+  if (obsSec) { obsSec.disconnect(); obsSec = null; }
+  // avec une seule section il n'y a rien a naviguer
+  if (!secs || secs.length < 2) { $('.tete').classList.remove('rail-on'); return; }
+
+  secs.forEach(function (sec, i) {
+    var b = el('button', 'rail-p' + (sec.dataset.refrain === '1' ? ' refrain' : ''));
+    b.type = 'button'; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    b.textContent = sec.dataset.libelle;
+    b.classList.toggle('sue', sec.classList.contains('sue'));
+    b.addEventListener('click', function () {
+      verrouRail = Date.now();          // sinon les puces traversees clignotent
+      marquerRail(i);
+      sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    rail.appendChild(b);
+  });
+
+  if (!('IntersectionObserver' in window)) return;
+  obsSec = new IntersectionObserver(function (entrees) {
+    if (Date.now() - verrouRail < 700) return;
+    var vus = entrees.filter(function (e) { return e.isIntersecting; });
+    if (!vus.length) return;
+    vus.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+    marquerRail(secs.indexOf(vus[0].target));
+  }, { rootMargin: '-96px 0px -62% 0px', threshold: 0 });
+  secs.forEach(function (sec) { obsSec.observe(sec); });
+}
+
+function marquerRail(i) {
+  if (i < 0) return;
+  var puces = $$('.rail-p', rail);
+  puces.forEach(function (b, j) { b.setAttribute('aria-selected', String(j === i)); });
+  var a = puces[i];
+  if (a) {
+    var r = a.getBoundingClientRect(), rr = rail.getBoundingClientRect();
+    if (r.left < rr.left + 8 || r.right > rr.right - 8) {
+      rail.scrollTo({ left: a.offsetLeft - rail.clientWidth / 2 + a.offsetWidth / 2,
+                      behavior: 'smooth' });
+    }
+  }
 }
 
 /* ═══════════════════════════ ROUTAGE ═══════════════════════════ */
@@ -913,6 +972,8 @@ function afficher() {
 
   var t = $('.tete');
   if (t) t.classList.toggle('decolle', window.scrollY > 24);
+  if (t) t.classList.remove('rail-on');
+  poserSentinelle();
 
   if (attendreParoles && r.vue === 'piste') {
     attendreParoles = false;
@@ -922,6 +983,23 @@ function afficher() {
 
 window.addEventListener('hashchange', function () { afficher(); });
 $('#btn-retour').addEventListener('click', function () { location.hash = '#' + origine; });
+
+/* Le rail remplace le titre quand les paroles atteignent le haut. Une sentinelle
+   plutot qu'un seuil en pixels : aucune constante de hauteur a tenir a jour. */
+function poserSentinelle() {
+  if (obsSentinelle) { obsSentinelle.disconnect(); obsSentinelle = null; }
+  var sen = $('.rail-sentinelle');
+  var t = $('.tete');
+  if (!sen || !t || !('IntersectionObserver' in window)) return;
+  if (!$$('.rail-p', rail).length) return;
+  obsSentinelle = new IntersectionObserver(function (e) {
+    // La sentinelle est de hauteur nulle : « passee sous la barre » se lit
+    // directement sur sa position. Le seuil doit valoir la marge de racine,
+    // sinon la bascule n'arrive jamais (elle cesse d'intersecter des top < 56).
+    t.classList.toggle('rail-on', e[0].boundingClientRect.top < 56);
+  }, { rootMargin: '-56px 0px 0px 0px', threshold: 0 });
+  obsSentinelle.observe(sen);
+}
 
 /* la barre de piste ne montre son trait et son titre qu'une fois decollee */
 var tic = false;

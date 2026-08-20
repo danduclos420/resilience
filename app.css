@@ -63,7 +63,9 @@ body{
   line-height:1.6;
   font-weight:300;
   -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  /* clip et non hidden : hidden ferait de body un conteneur de defilement,
+     ce qui casse position:sticky pour la barre du haut de la vue piste */
+  overflow-x:clip;
   overscroll-behavior-y:none;
   /* on laisse le document defiler : l'appui sur la barre d'etat iOS
      ramene en haut, et l'inertie reste native */
@@ -304,34 +306,73 @@ ol,ul{list-style:none;margin:0;padding:0}
 /* ═══════════════════════ TETE DE PISTE (collante) ═══════════════════════ */
 .tete{
   position:sticky;top:0;z-index:var(--z-tete);
+  display:flex;align-items:center;gap:var(--e2);
+  min-height:calc(52px + var(--sat));padding-bottom:var(--e2);
   margin-left:calc(var(--marge) * -1);margin-right:calc(var(--marge-d) * -1);
   padding-top:var(--sat);
   padding-left:max(var(--e3), var(--sal));padding-right:max(var(--e4), var(--sar));
-  background:color-mix(in srgb, var(--s0) 88%, transparent);
-  -webkit-backdrop-filter:saturate(180%) blur(16px);
-  backdrop-filter:saturate(180%) blur(16px);
+  /* fond PLEIN : au-dessus d'une colonne de texte qui defile, un fond
+     translucide laisse voir les vers passer dessous */
+  background:var(--s0);
   border-bottom:1px solid transparent;
   transition:border-color var(--t-base) linear;
 }
 .tete.decolle{border-bottom-color:var(--ligne)}
-.tete-in,.tete{display:flex;align-items:center;gap:var(--e2)}
-.tete{height:auto}
-.tete>*{flex:none}
+/* .tete>* {flex:none} etait plus specifique que .tete-mid{flex:1} et empechait
+   la zone centrale de s'etendre. On cible les cotes, pas tous les enfants. */
+.tete-b,.tete-n{flex:none}
 .tete-b{
   width:44px;height:44px;border-radius:11px;display:grid;place-items:center;
   color:var(--tx);transition:background var(--t-vite) linear;
 }
 .tete-b:active{background:var(--s2)}
+.tete-mid{position:relative;flex:1;min-width:0;display:block;height:44px}
 .tete-t{
-  flex:1;min-width:0;font-size:16px;font-weight:600;letter-spacing:-.02em;
+  position:absolute;inset:0;display:flex;align-items:center;
+  font-size:16px;font-weight:600;letter-spacing:-.02em;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  opacity:0;transform:translateY(6px);
+  opacity:0;transform:translateY(6px);pointer-events:none;
   transition:opacity var(--t-base) var(--ent),transform var(--t-base) var(--ent);
 }
 .tete.decolle .tete-t{opacity:1;transform:none}
+/* le rail prend la place du titre des qu'on entre dans le texte : ce n'est pas
+   un doublon, c'est le meme objet vu de pres ou de loin */
+.tete.rail-on .tete-t{opacity:0;transform:translateY(-6px)}
+.rail{
+  position:absolute;inset:0;display:flex;align-items:center;gap:6px;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;
+  opacity:0;pointer-events:none;transform:translateY(6px);
+  transition:opacity var(--t-base) var(--ent),transform var(--t-base) var(--ent);
+}
+.rail::-webkit-scrollbar{display:none}
+/* les puces se fondent aux deux bords au lieu d'etre coupees net */
+.rail{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);
+}
+.tete.rail-on .rail{opacity:1;pointer-events:auto;transform:none}
+/* centrage en flex plutot que par line-height : une boite de ligne forcee plus
+   courte que la boite du glyphe rogne le texte */
+.rail-p{
+  position:relative;flex:none;height:32px;padding:0 12px;border-radius:8px;
+  display:inline-flex;align-items:center;
+  scroll-snap-align:center;white-space:nowrap;
+  background:var(--s1);color:var(--tx3);
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;line-height:1.4;
+  transition:background var(--t-vite) linear,color var(--t-vite) linear;
+}
+/* zone tactile portee a 44 px sans grossir la puce */
+.rail-p::after{content:'';position:absolute;left:0;right:0;top:-7px;bottom:-7px}
+.rail-p.refrain{color:var(--or-f)}
+.rail-p[aria-selected="true"]{background:var(--s3);color:var(--tx)}
+.rail-p.refrain[aria-selected="true"]{color:var(--or-c)}
+.rail-p.sue::before{content:'';position:absolute;top:5px;right:5px;
+  width:4px;height:4px;border-radius:50%;background:var(--ok)}
 .tete-n{font-size:11px;letter-spacing:.24em;color:var(--tx3);padding-right:var(--e1)}
 /* la barre collante mesure 44 + safe-area ; on garde ce bloc au-dessus du contenu */
-.tete{min-height:calc(52px + var(--sat));padding-bottom:var(--e2)}
+
 
 /* ═══════════════════════ PISTE : IDENTITE ═══════════════════════ */
 .pi{position:relative;padding:var(--e6) 0 0;overflow:hidden}
@@ -475,7 +516,8 @@ ol,ul{list-style:none;margin:0;padding:0}
 /* ═══════════════════════ PAROLES ═══════════════════════ */
 /* Les paroles ne sont plus dans un repliable : c'est une section a part entiere,
    avec sa propre en-tete. Chaque couplet se replie individuellement. */
-.paroles{margin:var(--e8) 0 0}
+.rail-sentinelle{display:block;height:0;margin:var(--e8) 0 0}
+.paroles{margin:0}
 .par-tete{
   display:flex;align-items:center;gap:var(--e3);
   padding:0 0 var(--e4);margin:0 0 var(--e5);
@@ -550,14 +592,14 @@ ol,ul{list-style:none;margin:0;padding:0}
 }
 .par-voile.on{background:var(--or-v);color:var(--or-c);border-color:var(--or-f)}
 .par-voile:active{background:var(--s2)}
-.amorce,.suite{transition:opacity var(--t-base) linear}
+.amorce,.vsuite{transition:opacity var(--t-base) linear}
 /* on garde la silhouette : il doit voir la longueur des barres sans les lire */
-.paroles[data-voile="1"] .suite{opacity:.07}
+.paroles[data-voile="1"] .vsuite{opacity:.07}
 .paroles[data-voile="2"] .amorce,
-.paroles[data-voile="2"] .suite{opacity:.07}
+.paroles[data-voile="2"] .vsuite{opacity:.07}
 .paroles[data-voile="1"] .vers,
 .paroles[data-voile="2"] .vers{cursor:pointer}
-.vers.revele .amorce,.vers.revele .suite{opacity:1}
+.vers.revele .amorce,.vers.revele .vsuite{opacity:1}
 
 /* ── « je la sais » : marche sans audio, donc sur les dix titres ── */
 .su{

@@ -122,7 +122,13 @@
       <button class="tete-b" id="btn-retour" aria-label="Revenir aux titres">
         <svg class="ic ic-20"><use href="#ic-retour"/></svg>
       </button>
-      <span class="tete-t" id="tete-titre"></span>
+      <!-- Deux couches dans le meme emplacement : le titre en haut de page, le
+           rail des sections des qu'on lit. Elles se relaient sans ajouter un
+           pixel de hauteur. -->
+      <span class="tete-mid">
+        <span class="tete-t" id="tete-titre"></span>
+        <span class="rail" id="rail" role="tablist" aria-label="Sections du texte"></span>
+      </span>
       <span class="tete-n mono" id="tete-num"></span>
     </div>
     <div id="piste-corps"></div>
