@@ -119,9 +119,23 @@ function majMedia(p) {
 function charger(num, src, lancer) {
   var p = piste(num);
   if (!p || !p[src]) return;
-  var change = lect.num !== num || lect.src !== src;
+  var changePiste = lect.num !== num;
+  var changeSource = lect.src !== src;
+  // Maquette et instrumental d'un meme titre ont exactement le meme montage :
+  // on garde la position en changeant de source, sinon on perd son passage.
+  var reprise = (!changePiste && changeSource) ? A.currentTime : 0;
   lect.num = num; lect.src = src;
-  if (change) { A.src = p[src]; A.currentTime = 0; placer(0); }
+  if (changePiste || changeSource) {
+    A.src = p[src];
+    if (reprise > 0) {
+      A.addEventListener('loadedmetadata', function pose() {
+        A.removeEventListener('loadedmetadata', pose);
+        if (isFinite(A.duration)) A.currentTime = Math.min(reprise, A.duration - 0.05);
+      });
+    } else {
+      A.currentTime = 0; placer(0);
+    }
+  }
 
   mini.hidden = false;
   document.body.classList.add('a-mini');
@@ -162,6 +176,9 @@ function placer(f) {
   flPoi.style.left = pc;
   flT1.textContent = mmss(f * (A.duration || 0));
   flBarre.setAttribute('aria-valuenow', Math.round(f * 100));
+  // un lecteur d'ecran annoncait « 34 » : on lui donne le temps reel
+  flBarre.setAttribute('aria-valuetext', mmss(f * (A.duration || 0)) +
+    (isFinite(A.duration) ? ' sur ' + mmss(A.duration) : ''));
 }
 
 /* barre de lecture : glissement au doigt, a la souris et au clavier */
@@ -194,10 +211,20 @@ flBarre.addEventListener('keydown', function (ev) {
 
 miniPP.addEventListener('click', bascule);
 flPP.addEventListener('click', bascule);
-$('#fl-recul').addEventListener('click', function () { A.currentTime = Math.max(0, A.currentTime - 15); });
-$('#fl-avance').addEventListener('click', function () {
-  if (isFinite(A.duration)) A.currentTime = Math.min(A.duration, A.currentTime + 15);
-});
+/* 15 s valaient 6 a 10 mesures selon le tempo — un couplet entier. On recule
+   de quatre mesures, calculees depuis le BPM reel de la piste. */
+function pasMesures(n) {
+  var p = piste(lect.num);
+  if (!p || !p.bpm) return 5;
+  return (60 / p.bpm) * 4 * n;
+}
+function deplacer(sens) {
+  if (!isFinite(A.duration)) return;
+  var d = pasMesures(1) * sens;
+  A.currentTime = Math.min(A.duration, Math.max(0, A.currentTime + d));
+}
+$('#fl-recul').addEventListener('click', function () { deplacer(-1); });
+$('#fl-avance').addEventListener('click', function () { deplacer(1); });
 if ('mediaSession' in navigator) {
   var ms = navigator.mediaSession;
   try {
@@ -529,22 +556,29 @@ function rendrePiste(num) {
 
   /* Paroles — PAS d'accordeon englobant. Chaque section se replie seule ; un
      repliable dans un repliable obligeait a deux ouvertures pour lire un vers. */
-  if (p.paroles.length) {
+  // une section dont aucun « vers » ne contient de lettre n'est pas du texte a
+  // apprendre (piste 01 : une « Intro » qui ne contient que des points)
+  var sections = p.paroles.filter(function (s) {
+    return s.vers.some(function (v) { return /[a-zà-ÿ0-9]/i.test(v); });
+  });
+  if (sections.length) {
     var par = el('section', 'paroles');
 
     var tete = el('div', 'par-tete');
     tete.appendChild(ic('texte', 18));
     tete.appendChild(el('b', null, 'Paroles'));
-    tete.appendChild(el('span', 'cpt', p.nbVers + ' vers'));
+    var nbReels = sections.reduce(function (n, s) { return n + s.vers.length; }, 0);
+    tete.appendChild(el('span', 'cpt', nbReels + ' vers'));
     var btTout = el('button', 'par-tout'); btTout.type = 'button';
     btTout.appendChild(el('span', null, 'Tout replier'));
     var chvTout = ic('chevron', 16); chvTout.classList.add('chv');
     btTout.appendChild(chvTout);
-    tete.appendChild(btTout);
+    // avec une seule section, un « tout replier » et un chevron n'ont pas de sens
+    if (sections.length > 1) tete.appendChild(btTout);
     par.appendChild(tete);
 
     var secs = [];
-    p.paroles.forEach(function (s) {
+    sections.forEach(function (s) {
       // seul le vrai refrain passe en or : le pre-refrain doit rester distinct
       var est = /^(refrain|dernier refrain)/i.test(s.tag);
       var sec = el('div', 'par-sec' + (est ? ' refrain' : ''));
@@ -607,7 +641,10 @@ function rendrePiste(num) {
 var VUES = { album: '#v-album', apprendre: '#v-apprendre', studio: '#v-studio',
               guide: '#v-guide', piste: '#v-piste' };
 var defilement = {};
-var courant = null, navInternes = 0;
+var courant = null;
+/* Retour hierarchique : on memorise l'onglet d'ou vient la piste plutot que de
+   suivre l'historique, qui comptait aussi les enchainements « titre suivant ». */
+var origine = 'album';
 
 function route() {
   var h = (location.hash || '#album').slice(1);
@@ -617,11 +654,15 @@ function route() {
 
 function afficher() {
   var r = route();
+  if (r.vue !== 'piste' && VUES[r.vue]) origine = r.vue;
   if (courant) defilement[courant] = window.scrollY;
 
   Object.keys(VUES).forEach(function (k) { $(VUES[k]).hidden = (k !== r.vue); });
+  // sur une vue piste, l'onglet d'ou l'on vient reste allume : une barre
+  // entierement eteinte ne dit plus ou l'on se trouve
+  var ongActif = (r.vue === 'piste') ? origine : r.vue;
   $$('.ong').forEach(function (o) {
-    if (o.dataset.ong === r.vue) o.setAttribute('aria-current', 'page');
+    if (o.dataset.ong === ongActif) o.setAttribute('aria-current', 'page');
     else o.removeAttribute('aria-current');
   });
 
@@ -631,7 +672,8 @@ function afficher() {
   else if (r.vue === 'guide') rendreGuide();
 
   var y = defilement[r.cle];
-  window.scrollTo({ top: y || 0, behavior: 'auto' });
+  // 'auto' suit scroll-behavior:smooth du CSS : le changement de vue s'animait
+  window.scrollTo({ top: y || 0, behavior: 'instant' });
   courant = r.cle;
   document.title = (r.vue === 'piste' && piste(r.num))
     ? piste(r.num).titre + ' — Résilience' : 'Résilience — D.M.P';
@@ -640,11 +682,8 @@ function afficher() {
   if (t) t.classList.toggle('decolle', window.scrollY > 24);
 }
 
-window.addEventListener('hashchange', function () { navInternes++; afficher(); });
-$('#btn-retour').addEventListener('click', function () {
-  if (navInternes > 0) history.back();
-  else location.hash = '#album';
-});
+window.addEventListener('hashchange', function () { afficher(); });
+$('#btn-retour').addEventListener('click', function () { location.hash = '#' + origine; });
 
 /* la barre de piste ne montre son trait et son titre qu'une fois decollee */
 var tic = false;
