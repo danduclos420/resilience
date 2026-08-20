@@ -1,7 +1,7 @@
 /* Résilience — service worker.
    Coquille en cache d'abord : l'application s'ouvre sans reseau.
    Audio garde apres une premiere ecoute, puis reservi hors ligne. */
-var VERSION = 'resilience-v4';
+var VERSION = 'resilience-v5';
 var COQUILLE = VERSION + '-coquille';
 var MEDIA = VERSION + '-media';
 
@@ -54,19 +54,21 @@ function decouper(rep, plage) {
   });
 }
 
-function servirAudio(req) {
+function servirAudio(req, evt) {
   var cle = new Request(req.url, { mode: 'same-origin', credentials: 'same-origin' });
   return caches.open(MEDIA).then(function (cache) {
     return cache.match(cle).then(function (hit) {
       var plage = req.headers.get('range');
       if (hit) return plage ? decouper(hit.clone(), plage) : hit;
 
-      // pas encore garde : on sert le reseau tout de suite, et on telecharge
-      // le fichier entier en arriere-plan pour les prochaines ecoutes
+      // pas encore garde : on sert le reseau tout de suite, et on telecharge le
+      // fichier entier en arriere-plan. waitUntil est indispensable : sans lui le
+      // worker est arrete avant la fin du telechargement et rien n'est garde.
       var complet = fetch(cle).then(function (rep) {
-        if (rep && rep.ok && rep.status === 200) cache.put(cle, rep.clone());
+        if (rep && rep.ok && rep.status === 200) return cache.put(cle, rep.clone()).then(function () { return rep; });
         return rep;
       }).catch(function () { return null; });
+      if (evt && evt.waitUntil) evt.waitUntil(complet);
 
       return fetch(req).catch(function () {
         // hors ligne et rien en cache : on tente quand meme le telechargement complet
@@ -86,7 +88,7 @@ self.addEventListener('fetch', function (e) {
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // polices Google : laissees au reseau
 
-  if (/\.mp3$/i.test(url.pathname)) { e.respondWith(servirAudio(req)); return; }
+  if (/\.mp3$/i.test(url.pathname)) { e.respondWith(servirAudio(req, e)); return; }
 
   // coquille : cache d'abord, rafraichissement silencieux ensuite
   e.respondWith(
