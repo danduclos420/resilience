@@ -27,10 +27,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
 .hero>*{position:relative}
 .kicker{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.5em;
   text-transform:uppercase;color:var(--or);margin:0 0 26px;padding-left:.5em}
-/* Anton a besoin de 1.37x la taille de police pour contenir ses glyphes accentues.
+/* Anton a besoin de ~1.45x la taille de police (mesure sur la page en ligne) pour contenir ses glyphes accentues.
    On donne 1.4 d'interligne (sinon le degrade decapite les majuscules accentuees)
    et on rattrape l'air en marge negative, qui ne rogne pas la boite de fond. */
-.titre{margin:-.17em 0 -.15em;line-height:1.4;text-transform:uppercase;letter-spacing:-.012em;
+.titre{margin:-.22em 0 -.20em;line-height:1.5;text-transform:uppercase;letter-spacing:-.012em;
   padding:0;font-size:clamp(54px,20.5vw,132px);
   background:linear-gradient(176deg,#FFFDF8 4%,var(--or-l) 30%,var(--or) 58%,#6E5219 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
@@ -74,8 +74,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
 .prio-t{text-align:center;margin:0 0 22px}
 .prio-t .k{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.34em;
   text-transform:uppercase;color:var(--or);display:block;margin-bottom:11px}
-.prio-t h2{font-family:Anton,sans-serif;font-size:clamp(26px,7.4vw,35px);margin:-.16em 0;
-  text-transform:uppercase;letter-spacing:.01em;line-height:1.4;padding:0;color:var(--creme)}
+.prio-t h2{font-family:Anton,sans-serif;font-size:clamp(26px,7.4vw,35px);margin:-.21em 0;
+  text-transform:uppercase;letter-spacing:.01em;line-height:1.5;padding:0;color:var(--creme)}
 .prio-t p{margin:11px 0 0;font-size:15.5px;color:var(--creme3);font-style:italic}
 .pcarte{display:block;text-decoration:none;color:var(--creme);margin:0 0 11px;
   padding:19px 19px 17px;border-radius:6px;border:1px solid var(--or-d);
@@ -100,10 +100,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
   text-transform:uppercase;color:var(--creme3);margin:0 0 18px}
 .compteur .chiffre{display:flex;align-items:baseline;justify-content:center;gap:5px}
 .compteur .chiffre b{font-family:Anton,sans-serif;font-size:clamp(72px,20vw,102px);
-  line-height:1.4;margin:-.16em 0;padding:0;
+  line-height:1.5;margin:-.21em 0;padding:0;
   background:linear-gradient(170deg,#FFFDF8,var(--or) 72%,#7A5B1C);
   -webkit-background-clip:text;background-clip:text;color:transparent}
-.compteur .chiffre i{font-style:normal;font-family:Anton,sans-serif;line-height:1.4;
+.compteur .chiffre i{font-style:normal;font-family:Anton,sans-serif;line-height:1.5;
   font-size:clamp(30px,8.6vw,42px);color:var(--trait2)}
 .compteur p{margin:15px 0 0;font-size:15.5px;color:var(--creme2)}
 .jauge{display:flex;gap:6px;margin:28px auto 0;max-width:380px}
@@ -118,7 +118,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
 .ligne{display:flex;align-items:center;gap:15px;padding:16px 4px;min-height:64px;
   border-bottom:1px solid var(--trait);text-decoration:none;color:var(--creme)}
 .ligne:last-of-type{border-bottom:0}
-.ligne .n{font-family:Anton,sans-serif;font-size:22px;min-width:34px;line-height:1.45;
+.ligne .n{font-family:Anton,sans-serif;font-size:22px;min-width:34px;line-height:1.5;
   color:transparent;-webkit-text-stroke:1px var(--trait2)}
 .ligne.on .n{-webkit-text-stroke:1px var(--or)}
 .ligne .t{flex:1;font-size:18px;font-weight:400;letter-spacing:-.015em;line-height:1.34}
@@ -224,7 +224,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--or);outline-offset:
 
 .gloss{margin:94px 0 0}
 .gloss h2{font-family:Anton,sans-serif;font-size:clamp(30px,8.6vw,40px);text-transform:uppercase;
-  letter-spacing:.005em;margin:12px 0 4px;line-height:1.4;padding:0;color:var(--or-l)}
+  letter-spacing:.005em;margin:6px 0 0;line-height:1.5;padding:0;color:var(--or-l)}
 .gloss .intro{font-size:16px;color:var(--creme3);margin:0 0 6px;font-style:italic}
 .gl{padding:19px 0;border-bottom:1px solid var(--trait)}
 .gl:last-child{border-bottom:0}
