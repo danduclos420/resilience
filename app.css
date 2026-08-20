@@ -391,11 +391,19 @@ ol,ul{list-style:none;margin:0;padding:0}
   text-transform:uppercase;line-height:1.7;
 }
 .avert p{margin:0;font-size:15px;color:var(--tx2);line-height:1.6}
+/* l'alerte de production etait le texte le plus petit et le plus pale de la
+   fiche, en styles en ligne, au fond d'un repliable */
+.alerte{
+  display:flex;gap:var(--e3);margin:var(--e3) 0 0;padding:var(--e4);
+  border-radius:12px;background:var(--s2);border-left:2px solid var(--or-f);
+}
+.alerte svg{color:var(--or);margin-top:2px}
+.alerte p{margin:0;font-size:15.5px;color:var(--tx2);line-height:1.62}
 
 /* ═══════════════════════ SECTIONS REPLIABLES ═══════════════════════ */
 .bloc{margin:var(--e3) 0 0;border-radius:12px;background:var(--s1);
   border:1px solid var(--ligne);overflow:hidden}
-.bloc:first-of-type{margin-top:var(--e6)}
+/* .bloc:first-of-type ne s'appliquait jamais : le premier div est .pi */
 .bloc-t{
   display:flex;align-items:center;gap:var(--e3);width:100%;
   min-height:56px;padding:var(--e3) var(--e4);text-align:left;
@@ -643,7 +651,7 @@ ol,ul{list-style:none;margin:0;padding:0}
 @keyframes fe-ent{from{transform:translate3d(0,100%,0)}to{transform:none}}
 @keyframes fe-sor{from{transform:none}to{transform:translate3d(0,100%,0)}}
 
-.fl-poignee-b{width:100%;height:34px;display:grid;place-items:center}
+.fl-poignee-b{width:100%;height:44px;display:grid;place-items:center}
 .fl-poignee-b i{display:block;width:40px;height:4px;border-radius:4px;background:var(--ligne2)}
 .fl-haut{display:flex;align-items:center;gap:var(--e4);margin:var(--e1) 0 var(--e6)}
 .fl-num{
@@ -676,8 +684,8 @@ ol,ul{list-style:none;margin:0;padding:0}
 .fl-bascule.serre .fb svg{display:none}
 .fl-bascule[hidden]{display:none}
 
-.fl-barre{position:relative;height:40px;display:flex;align-items:center;
-  margin:var(--e6) 0 0;touch-action:none;cursor:pointer}
+.fl-barre{position:relative;height:44px;display:flex;align-items:center;
+  margin:var(--e5) 0 0;touch-action:none;cursor:pointer}
 .fl-piste{display:block;width:100%;height:4px;border-radius:4px;background:var(--ligne2);
   position:relative;overflow:hidden}
 .fl-piste b{position:absolute;inset:0 100% 0 0;background:var(--or);border-radius:4px}
@@ -709,6 +717,29 @@ ol,ul{list-style:none;margin:0;padding:0}
   box-shadow:0 10px 30px -12px var(--or);
 }
 .fc-pp:active{background:var(--or-c);transform:scale(.95)}
+
+.fl-outils{display:flex;align-items:center;gap:var(--e2);margin:0 0 var(--e3)}
+.fo{
+  display:inline-flex;align-items:center;gap:var(--e2);min-height:44px;
+  padding:0 var(--e4);border-radius:11px;background:var(--s0);
+  border:1px solid var(--ligne);color:var(--tx3);white-space:nowrap;
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;line-height:1.7;
+  transition:background var(--t-base) var(--ent),color var(--t-base) linear;
+}
+.fo[aria-pressed="true"]{background:var(--or-v);color:var(--or-c);
+  border-color:var(--or-f)}
+.fl-vit{display:flex;gap:4px;margin-left:auto;padding:4px;border-radius:11px;
+  background:var(--s0);border:1px solid var(--ligne)}
+.fv{
+  position:relative;min-width:46px;min-height:36px;padding:0 var(--e2);border-radius:8px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--tx3);
+  font-variant-numeric:tabular-nums;
+  transition:background var(--t-base) var(--ent),color var(--t-base) linear;
+}
+/* zone tactile portee a 44 px sans grossir le visuel : 36 + 2x4 de debord */
+.fv::after{content:'';position:absolute;left:0;right:0;top:-4px;bottom:-4px}
+.fv.on{background:var(--or-v);color:var(--or-c);box-shadow:inset 0 0 0 1px var(--or-f)}
 
 .fl-vers{
   display:flex;align-items:center;gap:var(--e3);width:100%;min-height:52px;

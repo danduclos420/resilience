@@ -225,6 +225,24 @@ function deplacer(sens) {
 }
 $('#fl-recul').addEventListener('click', function () { deplacer(-1); });
 $('#fl-avance').addEventListener('click', function () { deplacer(1); });
+/* Repeter et ralentir. preservesPitch garde la hauteur du chant : sans lui,
+   ralentir descend la voix et le repere melodique est fausse. */
+var boucle = $('#fl-boucle');
+boucle.addEventListener('click', function () {
+  A.loop = !A.loop;
+  boucle.setAttribute('aria-pressed', String(A.loop));
+});
+$$('.fv').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var v = parseFloat(b.dataset.vit);
+    A.preservesPitch = true;
+    A.mozPreservesPitch = true;
+    A.webkitPreservesPitch = true;
+    A.playbackRate = v;
+    $$('.fv').forEach(function (x) { x.classList.toggle('on', x === b); });
+  });
+});
+
 if ('mediaSession' in navigator) {
   var ms = navigator.mediaSession;
   try {
@@ -275,9 +293,20 @@ document.addEventListener('keydown', function (ev) {
   if (ev.key === 'Escape' && feuilleOuverte) fermerFeuille();
 });
 $('#fl-vers').addEventListener('click', function () {
-  var n = lect.num; fermerFeuille();
-  if (n) location.hash = '#t' + n;
+  var n = lect.num;
+  if (!n) return;
+  fermerFeuille();
+  // si le hash est deja celui de la piste, aucun hashchange n'est emis : le
+  // bouton ne faisait alors rien du tout
+  if (location.hash === '#t' + n) versParoles();
+  else { attendreParoles = true; location.hash = '#t' + n; }
 });
+
+var attendreParoles = false;
+function versParoles() {
+  var cible = document.querySelector('.paroles .par-sec') || document.querySelector('.paroles');
+  if (cible) cible.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 /* glissement vers le bas pour refermer — un bouton reste toujours disponible */
 (function () {
@@ -522,13 +551,14 @@ function rendrePiste(num) {
       p.reste.forEach(function (x) { r.appendChild(el('span', 'rj', x)); });
       c.appendChild(r);
     }
-    if (p.alerte) {
-      var n = el('p', 'note'); n.style.marginTop = '16px';
-      n.style.color = 'var(--tx3)'; n.style.fontSize = '15px';
-      n.textContent = p.alerte;
-      c.appendChild(n);
-    }
   }));
+
+  if (p.alerte) {
+    var al = el('div', 'alerte');
+    al.appendChild(ic('chantier', 20));
+    al.appendChild(el('p', null, p.alerte));
+    box.appendChild(al);
+  }
 
   /* fiche technique — repliee par defaut */
   box.appendChild(repliable('Fiche technique', 'album', '', false, function (c) {
@@ -680,6 +710,11 @@ function afficher() {
 
   var t = $('.tete');
   if (t) t.classList.toggle('decolle', window.scrollY > 24);
+
+  if (attendreParoles && r.vue === 'piste') {
+    attendreParoles = false;
+    requestAnimationFrame(versParoles);
+  }
 }
 
 window.addEventListener('hashchange', function () { afficher(); });

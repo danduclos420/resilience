@@ -50,6 +50,7 @@
 <symbol id="ic-externe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4h7v7"/><path d="M20 4l-9 9"/><path d="M18 14.5V19a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 19V8a1.5 1.5 0 0 1 1.5-1.5H10"/></symbol>
 <symbol id="ic-texte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 11h16"/><path d="M4 16h10"/></symbol>
 <symbol id="ic-studio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v7"/><path d="M6 14v7"/><circle cx="6" cy="12" r="2"/><path d="M12 3v13"/><path d="M12 20v1"/><circle cx="12" cy="18" r="2"/><path d="M18 3v3"/><path d="M18 10v11"/><circle cx="18" cy="8" r="2"/></symbol>
+<symbol id="ic-boucle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.5l3.5 3.5L17 9.5"/><path d="M20.5 6H7a4 4 0 0 0-4 4v1"/><path d="M7 21.5L3.5 18 7 14.5"/><path d="M3.5 18H17a4 4 0 0 0 4-4v-1"/></symbol>
 <symbol id="ic-reglages" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10"/><circle cx="17" cy="7" r="2.4"/><path d="M20 17H10"/><circle cx="7" cy="17" r="2.4"/></symbol>
 </defs></svg>
 
@@ -189,6 +190,18 @@
     <button class="fc" id="fl-avance" aria-label="Avancer de quatre mesures">
       <svg class="ic ic-26"><use href="#ic-avance"/></svg><em class="mono">4</em>
     </button>
+  </div>
+
+  <!-- repeter et ralentir : les deux gestes de base pour memoriser un texte -->
+  <div class="fl-outils">
+    <button class="fo" id="fl-boucle" aria-pressed="false">
+      <svg class="ic ic-18"><use href="#ic-boucle"/></svg><span>Répéter</span>
+    </button>
+    <div class="fl-vit" role="group" aria-label="Vitesse de lecture">
+      <button class="fv" data-vit="0.75">0,75×</button>
+      <button class="fv" data-vit="0.9">0,9×</button>
+      <button class="fv on" data-vit="1">1×</button>
+    </div>
   </div>
 
   <button class="fl-vers" id="fl-vers">
