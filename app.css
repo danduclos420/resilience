@@ -247,10 +247,24 @@ ol,ul{list-style:none;margin:0;padding:0}
 .ec-d{display:none}   /* la duree est passee dans .ec-c s */
 
 .vide{
-  padding:var(--e7) var(--e5);text-align:center;border-radius:14px;
+  padding:var(--e8) var(--e5);text-align:center;border-radius:16px;
   background:var(--s1);border:1px dashed var(--ligne2);
 }
-.vide p{margin:0;color:var(--tx3);font-size:15.5px;line-height:1.6}
+.vide>svg{margin:0 auto var(--e4);color:var(--or);opacity:.8}
+.vide-t{margin:0 0 var(--e2)!important;font-size:18.5px;font-weight:600;
+  color:var(--tx)!important;letter-spacing:-.02em;line-height:1.35}
+.vide p{margin:0;color:var(--tx3);font-size:15.5px;line-height:1.62;max-width:38ch;
+  margin-left:auto;margin-right:auto}
+.vide-a{
+  display:inline-flex;align-items:center;gap:var(--e2);min-height:48px;
+  margin-top:var(--e6);padding:0 var(--e5);border-radius:99px;
+  background:var(--or-v);color:var(--or-c);box-shadow:inset 0 0 0 1px var(--or-f);
+  font-size:15.5px;transition:background var(--t-vite) linear;
+}
+.vide-a:active{background:#D4A94A2E}
+
+/* quatre onglets : les libelles doivent tenir des 320 px */
+.ong span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ═══════════════════════ TETE DE PISTE (collante) ═══════════════════════ */
 .tete{

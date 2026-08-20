@@ -49,6 +49,7 @@
 <symbol id="ic-chantier" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.6v5"/><path d="M12 16.3h.01"/></symbol>
 <symbol id="ic-externe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4h7v7"/><path d="M20 4l-9 9"/><path d="M18 14.5V19a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 19V8a1.5 1.5 0 0 1 1.5-1.5H10"/></symbol>
 <symbol id="ic-texte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 11h16"/><path d="M4 16h10"/></symbol>
+<symbol id="ic-studio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v7"/><path d="M6 14v7"/><circle cx="6" cy="12" r="2"/><path d="M12 3v13"/><path d="M12 20v1"/><circle cx="12" cy="18" r="2"/><path d="M18 3v3"/><path d="M18 10v11"/><circle cx="18" cy="8" r="2"/></symbol>
 <symbol id="ic-reglages" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10"/><circle cx="17" cy="7" r="2.4"/><path d="M20 17H10"/><circle cx="7" cy="17" r="2.4"/></symbol>
 </defs></svg>
 
@@ -81,13 +82,23 @@
   </section>
 
   <!-- ═══════════════ ECOUTER ═══════════════ -->
-  <section class="vue" id="v-ecouter" data-vue="ecouter" hidden>
+  <section class="vue" id="v-apprendre" data-vue="apprendre" hidden>
     <header class="vh">
-      <p class="vh-k">À apprendre</p>
-      <h1 class="vh-t">Écouter</h1>
+      <p class="vh-k">Prêt pour la cabine</p>
+      <h1 class="vh-t">Apprendre</h1>
       <p class="vh-p">Les titres dont la maquette est prête. La lecture continue pendant que tu navigues.</p>
     </header>
-    <div id="lst-ecoute"></div>
+    <div id="lst-apprendre"></div>
+  </section>
+
+  <!-- ═══════════════ STUDIO ═══════════════ -->
+  <section class="vue" id="v-studio" data-vue="studio" hidden>
+    <header class="vh">
+      <p class="vh-k">Versions officielles</p>
+      <h1 class="vh-t">Studio</h1>
+      <p class="vh-p">Les prises enregistrées en studio, une fois mixées.</p>
+    </header>
+    <div id="lst-studio"></div>
   </section>
 
   <!-- ═══════════════ GUIDE ═══════════════ -->
@@ -135,8 +146,11 @@
   <a class="ong" href="#album" data-ong="album">
     <svg class="ic ic-24"><use href="#ic-album"/></svg><span>Album</span>
   </a>
-  <a class="ong" href="#ecouter" data-ong="ecouter">
-    <svg class="ic ic-24"><use href="#ic-ecouter"/></svg><span>Écouter</span>
+  <a class="ong" href="#apprendre" data-ong="apprendre">
+    <svg class="ic ic-24"><use href="#ic-ecouter"/></svg><span>Apprendre</span>
+  </a>
+  <a class="ong" href="#studio" data-ong="studio">
+    <svg class="ic ic-24"><use href="#ic-studio"/></svg><span>Studio</span>
   </a>
   <a class="ong" href="#guide" data-ong="guide">
     <svg class="ic ic-24"><use href="#ic-guide"/></svg><span>Guide</span>

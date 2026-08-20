@@ -96,7 +96,8 @@ function charger(num, src, lancer) {
   document.body.classList.add('a-mini');
   miniNum.textContent = num;
   miniTitre.textContent = p.titre;
-  miniSource.textContent = src === 'instru' ? 'Instrumental' : 'Maquette';
+  miniSource.textContent = src === 'instru' ? 'Instrumental'
+                         : src === 'studio' ? 'Version studio' : 'Maquette';
   flNum.textContent = num;
   flTitre.textContent = p.titre;
   flFeat.textContent = p.feat ? 'avec ' + p.feat : 'D.M.P';
@@ -276,9 +277,9 @@ function rendreAlbum() {
   });
 }
 
-/* ═══════════════════════════ RENDU : ECOUTER ═══════════════════════════ */
-function rendreEcoute() {
-  var box = $('#lst-ecoute');
+/* ═══════════════════════════ RENDU : APPRENDRE ═══════════════════════════ */
+function rendreApprendre() {
+  var box = $('#lst-apprendre');
   box.textContent = '';
   var prets = P.filter(function (p) { return p.pret; });
   if (!prets.length) {
@@ -300,6 +301,41 @@ function rendreEcoute() {
     c.appendChild(el('s', null, info.join(' · ')));
     b.appendChild(c);
     b.addEventListener('click', function () { charger(p.num, 'maquette', true); ouvrirFeuille(); });
+    box.appendChild(b);
+  });
+}
+
+/* ═══════════════════════════ RENDU : STUDIO ═══════════════════════════ */
+function rendreStudio() {
+  var box = $('#lst-studio');
+  box.textContent = '';
+  var faits = P.filter(function (p) { return p.studio; });
+  if (!faits.length) {
+    // Etat vide utile : on dit ou on en est et ce qui declenchera l'arrivee ici.
+    var v = el('div', 'vide');
+    v.appendChild(ic('studio', 26));
+    v.appendChild(el('p', 'vide-t', 'Rien d’enregistré pour l’instant.'));
+    v.appendChild(el('p', null,
+      'Les prises studio apparaîtront ici au fur et à mesure, une fois mixées. ' +
+      'En attendant, les maquettes de l’onglet Apprendre servent à préparer la cabine.'));
+    var a = el('a', 'vide-a'); a.href = '#apprendre';
+    a.appendChild(el('span', null, 'Aller aux maquettes'));
+    a.appendChild(ic('suivant', 18));
+    v.appendChild(a);
+    box.appendChild(v);
+    return;
+  }
+  faits.forEach(function (p) {
+    var b = el('button', 'ec'); b.type = 'button';
+    var r = el('span', 'ec-b'); r.appendChild(ic('play', 22)); b.appendChild(r);
+    var c = el('span', 'ec-c');
+    c.appendChild(el('b', null, p.titre));
+    var info = ['Version studio'];
+    if (p.feat) info.push('avec ' + p.feat);
+    if (p.studioDuree) info.push(p.studioDuree);
+    c.appendChild(el('s', null, info.join(' · ')));
+    b.appendChild(c);
+    b.addEventListener('click', function () { charger(p.num, 'studio', true); ouvrirFeuille(); });
     box.appendChild(b);
   });
 }
@@ -528,7 +564,8 @@ function rendrePiste(num) {
 }
 
 /* ═══════════════════════════ ROUTAGE ═══════════════════════════ */
-var VUES = { album: '#v-album', ecouter: '#v-ecouter', guide: '#v-guide', piste: '#v-piste' };
+var VUES = { album: '#v-album', apprendre: '#v-apprendre', studio: '#v-studio',
+              guide: '#v-guide', piste: '#v-piste' };
 var defilement = {};
 var courant = null, navInternes = 0;
 
@@ -549,7 +586,8 @@ function afficher() {
   });
 
   if (r.vue === 'piste') rendrePiste(r.num);
-  else if (r.vue === 'ecouter') rendreEcoute();
+  else if (r.vue === 'apprendre') rendreApprendre();
+  else if (r.vue === 'studio') rendreStudio();
   else if (r.vue === 'guide') rendreGuide();
 
   var y = defilement[r.cle];
