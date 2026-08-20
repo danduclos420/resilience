@@ -390,11 +390,18 @@ function rendreAlbum() {
     a.appendChild(el('span', 'pl-n anton', p.num));
     var c2 = el('span', 'pl-c');
     c2.appendChild(el('b', null, p.titre));
-    // une seule ligne : la tonalite est dans la fiche technique du titre
-    var bits = [];
-    if (p.feat) bits.push('avec ' + p.feat);
-    bits.push(p.bpm + ' BPM' + (p.pret ? '' : ' visé'));
-    c2.appendChild(el('s', null, bits.join(' · ')));
+    // Les huit lignes en chantier affichaient toutes « <bpm> BPM vise » : rien ne
+    // les distinguait. On montre ce qui bloque reellement. Le BPM reste dans la
+    // fiche technique du titre.
+    var sous;
+    if (p.pret) {
+      sous = (p.feat ? 'avec ' + p.feat + ' · ' : '') + p.bpm + ' BPM · ' + p.duree;
+    } else if (p.alerte) {
+      sous = p.alerte;
+    } else {
+      sous = 'Texte, instru et maquette à faire';
+    }
+    c2.appendChild(el('s', null, sous));
     a.appendChild(c2);
     var e = el('span', 'pl-e');
     e.appendChild(el('span', 'pastille'));
@@ -407,31 +414,59 @@ function rendreAlbum() {
 }
 
 /* ═══════════════════════════ RENDU : APPRENDRE ═══════════════════════════ */
+function groupe(titre, sousTitre) {
+  var g = el('section', 'grp');
+  var t = el('div', 'grp-t');
+  t.appendChild(el('span', null, titre));
+  t.appendChild(el('i'));
+  g.appendChild(t);
+  if (sousTitre) g.appendChild(el('p', 'grp-p', sousTitre));
+  return g;
+}
+
 function rendreApprendre() {
   var box = $('#lst-apprendre');
   box.textContent = '';
-  var prets = P.filter(function (p) { return p.pret; });
-  if (!prets.length) {
-    var v = el('div', 'vide');
-    v.appendChild(el('p', null, 'Aucune maquette n’est prête pour le moment. Elles apparaîtront ici dès qu’un titre sera complet.'));
-    box.appendChild(v);
-    return;
+  var avec = P.filter(function (p) { return p.maquette; });
+  var sans = P.filter(function (p) { return !p.maquette; });
+
+  if (avec.length) {
+    var g1 = groupe('Avec la maquette');
+    avec.forEach(function (p) {
+      var b = el('button', 'ec'); b.type = 'button';
+      var r = el('span', 'ec-b'); r.appendChild(ic('play', 22)); b.appendChild(r);
+      var c = el('span', 'ec-c');
+      c.appendChild(el('b', null, p.titre));
+      var info = ['Maquette'];
+      if (p.feat) info.push('avec ' + p.feat);
+      info.push(p.duree);
+      c.appendChild(el('s', null, info.join(' · ')));
+      b.appendChild(c);
+      // on ouvre le texte et on lance : plus de modale intermediaire
+      b.addEventListener('click', function () {
+        charger(p.num, 'maquette', true);
+        location.hash = '#t' + p.num;
+      });
+      g1.appendChild(b);
+    });
+    box.appendChild(g1);
   }
-  prets.forEach(function (p) {
-    var b = el('button', 'ec');
-    b.type = 'button';
-    var r = el('span', 'ec-b'); r.appendChild(ic('play', 22)); b.appendChild(r);
-    var c = el('span', 'ec-c');
-    c.appendChild(el('b', null, p.titre));
-    // la duree vit sur la ligne d'info : en colonne, elle tronquait le titre
-    var info = ['Maquette'];
-    if (p.feat) info.push('avec ' + p.feat);
-    info.push(p.duree);
-    c.appendChild(el('s', null, info.join(' · ')));
-    b.appendChild(c);
-    b.addEventListener('click', function () { charger(p.num, 'maquette', true); ouvrirFeuille(); });
-    box.appendChild(b);
-  });
+
+  if (sans.length) {
+    var g2 = groupe('Texte seul — ' + sans.length + ' titres',
+      'Pas encore de maquette. Le texte est là, mais il sera réécrit : ne l’apprends pas.');
+    sans.forEach(function (p) {
+      var a = el('a', 'tx'); a.href = '#t' + p.num;
+      a.appendChild(el('span', 'tx-n anton', p.num));
+      var c = el('span', 'tx-c');
+      c.appendChild(el('b', null, p.titre));
+      c.appendChild(el('s', null, p.nbVers + ' vers · version de travail'));
+      a.appendChild(c);
+      a.appendChild(ic('suivant', 18));
+      g2.appendChild(a);
+    });
+    box.appendChild(g2);
+  }
 }
 
 /* ═══════════════════════════ RENDU : STUDIO ═══════════════════════════ */
