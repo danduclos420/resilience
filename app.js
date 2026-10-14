@@ -418,9 +418,11 @@ function rendreAlbum() {
   requestAnimationFrame(function () {
     $('#anneau').style.strokeDashoffset = String(c - c * (prets.length / 10));
   });
-  $('#prog-d').textContent = prets.length
-    ? 'Texte final, instrumental final et maquette à écouter.'
-    : 'Aucun titre n’est encore complet.';
+  var enreg = P.filter(function (p) { return p.studio; }).length;
+  $('#prog-d').textContent = !prets.length ? 'Aucun titre n’est encore complet.'
+    : enreg ? (enreg === 1 ? 'Dont un déjà enregistré en studio.'
+                           : 'Dont ' + enreg + ' déjà enregistrés en studio.')
+    : 'Texte final, instrumental final et maquette à écouter.';
 
   var ol = $('#lst-pistes');
   ol.textContent = '';
@@ -435,7 +437,9 @@ function rendreAlbum() {
     // les distinguait. On montre ce qui bloque reellement. Le BPM reste dans la
     // fiche technique du titre.
     var sous;
-    if (p.pret) {
+    if (p.studio) {
+      sous = 'Enregistré en studio · ' + (p.studioDuree || p.duree);
+    } else if (p.pret) {
       sous = (p.feat ? 'avec ' + p.feat + ' · ' : '') + p.bpm + ' BPM · ' + p.duree;
     } else if (p.alerte) {
       sous = p.alerte;
@@ -609,16 +613,22 @@ function rendrePiste(num) {
   pi.appendChild(el('h1', null, p.titre));
   if (p.feat) pi.appendChild(el('span', 'pi-f', 'avec ' + p.feat));
   var et = el('span', 'etat ' + (p.pret ? 'pret' : 'chantier'));
-  et.appendChild(ic(p.pret ? 'check' : 'chantier', 18));
-  et.appendChild(el('span', null, p.pret ? 'Prêt pour la cabine' : 'En chantier'));
+  et.appendChild(ic(p.studio ? 'studio' : p.pret ? 'check' : 'chantier', 18));
+  et.appendChild(el('span', null, p.studio ? 'Enregistré en studio'
+                                  : p.pret ? 'Prêt pour la cabine' : 'En chantier'));
   pi.appendChild(et);
   box.appendChild(pi);
 
   /* sources audio ou avertissement */
   if (p.pret) {
     var s = el('div', 'src');
-    [['maquette', 'Maquette', 'À apprendre · ' + p.duree, true, 'micro'],
-     ['instru', 'Instrumental', 'Le beat seul', false, 'note']].forEach(function (x) {
+    // Une fois enregistree, la version studio devient le lecteur principal ;
+    // la maquette reste disponible pour reviser, mais ne porte plus l'or.
+    var sourcesPiste = [];
+    if (p.studio) sourcesPiste.push(['studio', 'Version studio', 'Enregistrée · ' + (p.studioDuree || ''), true, 'studio']);
+    sourcesPiste.push(['maquette', 'Maquette', 'À apprendre · ' + p.duree, !p.studio, 'micro']);
+    sourcesPiste.push(['instru', 'Instrumental', 'Le beat seul', false, 'note']);
+    sourcesPiste.forEach(function (x) {
       if (!p[x[0]]) return;
       var b = el('button', 'srcb' + (x[3] ? ' fort' : ''));
       b.type = 'button'; b.dataset.num = num; b.dataset.src = x[0];
