@@ -440,7 +440,8 @@ function rendreAlbum() {
     if (p.studio) {
       sous = 'Enregistré en studio · ' + (p.studioDuree || p.duree);
     } else if (p.pret) {
-      sous = (p.feat ? 'avec ' + p.feat + ' · ' : '') + p.bpm + ' BPM · ' + p.duree;
+      // le BPM reste sur la fiche du titre : ici il faisait passer la ligne a deux
+      sous = (p.feat ? 'avec ' + p.feat + ' · ' : 'Maquette · ') + p.duree;
     } else if (p.alerte) {
       sous = p.alerte;
     } else {
@@ -448,8 +449,19 @@ function rendreAlbum() {
     }
     c2.appendChild(el('s', null, sous));
     a.appendChild(c2);
+    // Jauge en quatre etapes plutot qu'une pastille verte ou rose : on voit ou
+    // en est chaque titre, et le compte se lit sans dependre de la couleur.
+    var reste = p.reste || [];
+    var etapes = [['Texte', reste.indexOf('Texte') < 0], ['Instru', reste.indexOf('Instru') < 0],
+                  ['Maquette', reste.indexOf('Maquette') < 0], ['Studio', !!p.studio]];
+    var faites = etapes.filter(function (x) { return x[1]; });
+    var jauge = el('span', 'jauge');
+    etapes.forEach(function (x, k) { jauge.appendChild(el('i', x[1] ? (k === 3 ? 'ok st' : 'ok') : null)); });
+    a.setAttribute('aria-label', p.titre + ' — ' + faites.length + ' étape' + (faites.length > 1 ? 's' : '') +
+      ' sur 4' + (faites.length ? ' : ' + faites.map(function (x) { return x[0].toLowerCase(); }).join(', ') : '') +
+      '. ' + sous);
     var e = el('span', 'pl-e');
-    e.appendChild(el('span', 'pastille'));
+    e.appendChild(jauge);
     var f = ic('suivant', 20); f.classList.add('pl-fl');
     e.appendChild(f);
     a.appendChild(e);

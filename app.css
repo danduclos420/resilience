@@ -226,6 +226,15 @@ ol,ul{list-style:none;margin:0;padding:0}
   background:var(--att);box-shadow:0 0 0 4px var(--att-v);
 }
 .pl.pret .pastille{background:var(--ok);box-shadow:0 0 0 4px var(--ok-v),0 0 12px -1px var(--ok)}
+/* jauge d'avancement : Texte · Instru · Maquette · Studio */
+.jauge{display:inline-flex;gap:2px;flex:none}
+.jauge i{width:6px;height:4px;border-radius:2px;background:var(--ligne2)}
+.jauge i.ok{background:var(--ok)}
+.jauge i.st{background:var(--or)}
+.lst-leg{
+  display:flex;align-items:center;gap:var(--e2);margin:0 0 var(--e2);
+  font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.04em;color:var(--tx3);
+}
 .pl-fl{color:var(--ligne2)}
 
 /* ═══════════════════════ CARTE D'ECOUTE ═══════════════════════ */
