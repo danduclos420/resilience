@@ -2,7 +2,7 @@
    Coquille : reseau d'abord, cache en secours — l'app est toujours a jour quand
    il y a du signal, et elle s'ouvre quand meme sans reseau.
    Audio : cache d'abord, garde apres une premiere ecoute. */
-var VERSION = 'resilience-v8';
+var VERSION = 'resilience-v9';
 var COQUILLE = VERSION + '-coquille';
 /* Le media n'est PAS versionne : une mise a jour de l'app ne doit jamais
    obliger a retelecharger les maquettes deja ecoutees. */

@@ -803,13 +803,15 @@ function rendrePiste(num) {
       // « Je la sais » : le suivi d'acquisition ne demande aucun audio, donc il
       // fonctionne aussi sur les huit titres sans maquette.
       var sues = memoire.sues && memoire.sues[num] ? memoire.sues[num] : [];
+      // Une pastille dans l'en-tete plutot qu'un bouton « Je la sais » repete au
+      // bas de chaque section : l'etat se lit aussi quand la section est repliee.
       var su = el('button', 'su'); su.type = 'button';
-      su.appendChild(ic('check', 18));
-      su.appendChild(el('span', null, 'Je la sais'));
+      su.appendChild(ic('check', 16));
       function majSu() {
         var actif = sec.classList.contains('sue');
         su.setAttribute('aria-pressed', String(actif));
-        su.querySelector('span').textContent = actif ? 'Sue' : 'Je la sais';
+        su.setAttribute('aria-label', libelle + (actif ? ' : sue' : ' : je la sais'));
+        su.title = actif ? 'Sue' : 'Je la sais';
       }
       if (sues[iSec] === 1) sec.classList.add('sue');
       majSu();
@@ -821,9 +823,9 @@ function rendrePiste(num) {
         retenir(true);
         majCompteurSues();
       });
-      inner.appendChild(su);
-
-      sec.appendChild(t); sec.appendChild(cc);
+      var h = el('div', 'par-h');
+      h.appendChild(t); h.appendChild(su);
+      sec.appendChild(h); sec.appendChild(cc);
       sec.id = 'sec-' + num + '-' + iSec;
       sec.dataset.libelle = libelle;
       sec.dataset.refrain = est ? '1' : '0';
