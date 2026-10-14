@@ -912,6 +912,25 @@ ol,ul{list-style:none;margin:0;padding:0}
   .onglets{justify-content:center;gap:var(--e8)}
   .ong{flex:0 0 120px}
 }
+/* ordinateur : la barre d'onglets du telephone devient un rail a gauche.
+   Le contenu garde sa colonne de 640 px, centree dans l'espace qui reste. */
+@media (min-width:1024px){
+  :root{--l-rail:96px}
+  .onglets{
+    top:0;bottom:0;right:auto;width:var(--l-rail);
+    flex-direction:column;justify-content:center;gap:var(--e2);
+    padding:var(--e6) 0;border-top:0;border-right:1px solid var(--ligne);
+  }
+  .ong{flex:0 0 auto;width:100%;height:76px}
+  .ong::before{
+    top:50%;left:0;translate:0 -50%;width:2px;height:28px;
+    border-radius:0 3px 3px 0;scale:1 .3;
+  }
+  .ong[aria-current="page"]::before{scale:1 1}
+  body{padding-left:var(--l-rail);padding-bottom:var(--e7)}
+  body.a-mini{padding-bottom:calc(var(--h-mini) + var(--e7) + var(--e4))}
+  .mini{left:calc(var(--l-rail) + var(--e4));right:var(--e4);bottom:var(--e4)}
+}
 
 /* ═══════════════════════ ACCESSIBILITE ═══════════════════════ */
 @media (prefers-reduced-motion:reduce){
