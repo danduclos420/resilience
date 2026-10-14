@@ -179,6 +179,7 @@ function charger(num, src, lancer) {
   flTitre.textContent = p.titre;
   flFeat.textContent = p.feat ? 'avec ' + p.feat : 'D.M.P';
   majBascule(p, src);
+  if (feuilleOuverte) { majDl(); preparerDl(); }   // source changee dans le lecteur ouvert
   majModeTravail();
   flT2.textContent = mmss(A.duration);
   majMedia(p);
@@ -305,6 +306,52 @@ function deplacer(sens) {
 }
 $('#fl-recul').addEventListener('click', function () { deplacer(-1); });
 $('#fl-avance').addEventListener('click', function () { deplacer(1); });
+/* Telecharger ce qui joue. Sur iPhone (app installee), un lien « download » ne fait
+   rien : on passe par la feuille de partage (« Enregistrer dans Fichiers », AirDrop).
+   Safari exige que le partage parte du toucher lui-meme : le fichier est donc
+   prepare a l'ouverture du lecteur, pas apres le toucher. */
+var flDl = $('#fl-dl'), dlPret = null;
+function nomFichier() {
+  var p = piste(lect.num);
+  var src = lect.src === 'instru' ? 'Instrumental' : lect.src === 'studio' ? 'Version studio' : 'Maquette';
+  return p.num + ' - ' + p.titre + ' (' + src + ').mp3';
+}
+function majDl() {
+  var src = lect.src === 'instru' ? 'l’instrumental' : lect.src === 'studio' ? 'la version studio' : 'la maquette';
+  flDl.setAttribute('aria-label', 'Télécharger ' + src);
+}
+function preparerDl() {
+  var p = piste(lect.num); if (!p || !p[lect.src]) return;
+  var url = p[lect.src];
+  if (dlPret && dlPret.url === url) return;
+  var cle = { url: url, fichier: null };
+  dlPret = cle;
+  fetch(url).then(function (r) { return r.blob(); }).then(function (b) {
+    if (dlPret === cle) cle.fichier = new File([b], nomFichier(), { type: 'audio/mpeg' });
+  }).catch(function () {});
+}
+function lienDl(href, nom) {
+  var a = document.createElement('a');
+  a.href = href; a.download = nom; a.rel = 'noopener';
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { a.remove(); }, 1000);
+}
+flDl.addEventListener('click', function () {
+  var p = piste(lect.num); if (!p) return;
+  var url = p[lect.src], nom = nomFichier();
+  var f = dlPret && dlPret.url === url ? dlPret.fichier : null;
+  if (f && navigator.canShare && navigator.canShare({ files: [f] })) {
+    navigator.share({ files: [f], title: nom }).catch(function () {});
+    return;
+  }
+  if (f) {                                   // ordinateur : telechargement classique
+    var u = URL.createObjectURL(f); lienDl(u, nom);
+    setTimeout(function () { URL.revokeObjectURL(u); }, 4000);
+    return;
+  }
+  lienDl(url, nom);                          // fichier pas encore pret : lien direct
+});
+
 /* Repeter et ralentir. preservesPitch garde la hauteur du chant : sans lui,
    ralentir descend la voix et le repere melodique est fausse. */
 var boucle = $('#fl-boucle');
@@ -352,6 +399,7 @@ function ouvrirFeuille() {
   document.body.classList.add('fige');
   $('#vues').setAttribute('inert', '');
   flPP.focus({ preventScroll: true });
+  majDl(); preparerDl();
 }
 function fermerFeuille() {
   if (!feuilleOuverte) return;

@@ -960,3 +960,9 @@ ol,ul{list-style:none;margin:0;padding:0}
 }
 .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
   clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* telecharger depuis le lecteur : une seule icone, en haut a droite */
+.fl-dl{margin-left:auto;flex:none;width:44px;height:44px;display:grid;place-items:center;
+  border-radius:50%;color:var(--tx2);border:1px solid var(--ligne);background:var(--s2);
+  transition:transform var(--t-vite) var(--ent),background var(--t-vite) linear}
+.fl-dl:active{transform:scale(.92);background:var(--s3)}
