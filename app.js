@@ -488,25 +488,52 @@ function rendreApprendre() {
   var sans = P.filter(function (p) { return !p.maquette; });
 
   if (avec.length) {
-    var g1 = groupe('Avec la maquette');
-    avec.forEach(function (p) {
-      var b = el('button', 'ec'); b.type = 'button';
-      var r = el('span', 'ec-b'); r.appendChild(ic('play', 22)); b.appendChild(r);
-      var c = el('span', 'ec-c');
-      c.appendChild(el('b', null, p.titre));
-      var info = ['Maquette'];
-      if (p.feat) info.push('avec ' + p.feat);
-      info.push(p.duree);
-      c.appendChild(el('s', null, info.join(' · ')));
-      b.appendChild(c);
-      // on ouvre le texte et on lance : plus de modale intermediaire
-      b.addEventListener('click', function () {
-        charger(p.num, 'maquette', true);
-        location.hash = '#t' + p.num;
+    // Un seul appel principal : le titre le moins su (hors studio) en grande carte,
+    // les autres en lignes compactes. Avant : trois grosses cartes identiques.
+    function part(p) {
+      var s = memoire.sues && memoire.sues[p.num] ? memoire.sues[p.num] : [];
+      var n = s.filter(function (x) { return x === 1; }).length;
+      return { n: n, tot: s.length, r: s.length ? n / s.length : 0 };
+    }
+    var aTravailler = avec.filter(function (p) { return !p.studio; });
+    var choix = (aTravailler.length ? aTravailler : avec).slice().sort(function (a, b) {
+      return part(a).r - part(b).r || b.num.localeCompare(a.num);
+    })[0];
+    function jouer(p) { charger(p.num, 'maquette', true); location.hash = '#t' + p.num; }
+
+    var g0 = groupe('À travailler');
+    var b = el('button', 'ec'); b.type = 'button';
+    var r = el('span', 'ec-b'); r.appendChild(ic('play', 22)); b.appendChild(r);
+    var c = el('span', 'ec-c');
+    c.appendChild(el('b', null, choix.titre));
+    var pc = part(choix);
+    var info = ['Maquette'];
+    if (choix.feat) info.push('avec ' + choix.feat);
+    info.push(pc.n ? pc.n + ' / ' + pc.tot + ' sections sues' : choix.duree);
+    c.appendChild(el('s', null, info.join(' · ')));
+    b.appendChild(c);
+    b.addEventListener('click', function () { jouer(choix); });
+    g0.appendChild(b);
+    box.appendChild(g0);
+
+    var autres = avec.filter(function (p) { return p !== choix; });
+    if (autres.length) {
+      var g1 = groupe('Les autres maquettes');
+      autres.forEach(function (p) {
+        var a = el('button', 'tx tx-jouer'); a.type = 'button';
+        var rb = el('span', 'tx-b'); rb.appendChild(ic('play', 16)); a.appendChild(rb);
+        var cc = el('span', 'tx-c');
+        cc.appendChild(el('b', null, p.titre));
+        var q = part(p);
+        cc.appendChild(el('s', null, (p.studio ? 'Enregistré en studio' : 'Maquette') + ' · ' +
+          (q.n ? q.n + ' / ' + q.tot + ' sues' : p.duree)));
+        a.appendChild(cc);
+        a.setAttribute('aria-label', 'Écouter la maquette de ' + p.titre);
+        a.addEventListener('click', function () { jouer(p); });
+        g1.appendChild(a);
       });
-      g1.appendChild(b);
-    });
-    box.appendChild(g1);
+      box.appendChild(g1);
+    }
   }
 
   if (sans.length) {
@@ -570,7 +597,9 @@ var GUIDE = [
   ['Tonalité', 'La note autour de laquelle le morceau est construit. C’est elle qui décide si le chant tombe dans une zone confortable pour la voix.'],
   ['Mesure', 'L’unité de découpage du morceau — quatre temps. On compte en mesures pour placer chaque phrase exactement au bon endroit.'],
   ['Version de travail', 'Un texte encore provisoire. <b>À ne pas apprendre</b> : il sera réécrit avant l’enregistrement.'],
-  ['Prêt pour la cabine', 'Texte final, instrumental final, maquette disponible. Le morceau peut être enregistré.']
+  ['Prêt pour la cabine', 'Texte final, instrumental final, maquette disponible. Le morceau peut être enregistré.'],
+  ['Avancement', 'Les quatre petits traits à côté de chaque titre : <b>texte, instru, maquette, studio</b>. Un trait rempli, c’est une étape faite. Le dernier passe en or quand la version studio est en ligne.'],
+  ['Sue', 'La pastille à droite de chaque section des paroles. Coche-la quand tu sais la section par cœur : le compte apparaît en haut des paroles, et le titre le moins su remonte en tête d’Apprendre.']
 ];
 function rendreGuide() {
   var box = $('#lst-guide');
